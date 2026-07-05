@@ -1,11 +1,11 @@
 export default function Cart({ items, total, onUpdateQty, onClear, onComplete }) {
   return (
-    <div className="card border-flamingo-200 bg-white/95 backdrop-blur dark:border-flamingo-900 dark:bg-gray-900/95">
+    <div className="card border-flamingo-200 bg-white/95 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-bold">
           Sepet
           {total > 0 && (
-            <span className="ml-2 rounded-full bg-flamingo-100 px-2 py-0.5 text-sm text-flamingo-600 dark:bg-flamingo-900 dark:text-flamingo-300">
+            <span className="ml-2 rounded-full accent-badge px-2 py-0.5 text-sm">
               {total} ürün
             </span>
           )}
@@ -18,7 +18,7 @@ export default function Cart({ items, total, onUpdateQty, onClear, onComplete })
       </div>
 
       {items.length === 0 ? (
-        <p className="py-4 text-center text-sm text-gray-400">Sepet boş — ürün ekleyin</p>
+        <p className="py-4 text-center text-sm text-gray-400">Sepet Boş — Ürün Ekleyin</p>
       ) : (
         <div className="mb-3 max-h-40 space-y-2 overflow-y-auto">
           {items.map((item) => (
@@ -46,7 +46,7 @@ export default function Cart({ items, total, onUpdateQty, onClear, onComplete })
                   onClick={() =>
                     onUpdateQty(item.categoryId, item.variationId, item.quantity + 1)
                   }
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-flamingo-100 text-lg font-bold text-flamingo-600 dark:bg-flamingo-900"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-flamingo-100 text-lg font-bold text-flamingo-600 dark:bg-cream-100/20 dark:text-cream-100"
                 >
                   +
                 </button>

@@ -24,7 +24,7 @@ export default function SaleSuccessOverlay({ total, onClose }) {
           Satış Tamamlandı!
         </h2>
         <p className="mt-3 text-lg text-gray-600 dark:text-gray-300">
-          <span className="text-4xl font-bold text-flamingo-600 dark:text-flamingo-400">{total}</span>
+          <span className="text-4xl font-bold accent-text">{total}</span>
           <span className="ml-2">ürün satıldı</span>
         </p>
         <p className="mt-4 text-sm text-gray-400">Stok otomatik güncellendi</p>

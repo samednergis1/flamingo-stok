@@ -7,10 +7,15 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import useStore from '../../store/useStore';
 
-const COLORS = ['#f93d63', '#ff6480', '#ff9dad', '#ffc6d0', '#e71d4f', '#c30f3f', '#a3103a'];
+const COLORS_LIGHT = ['#f93d63', '#ff6480', '#ff9dad', '#ffc6d0', '#e71d4f', '#c30f3f', '#a3103a'];
+const COLORS_DARK = ['#f5f0eb', '#ebe4db', '#ddd4c8', '#d4ccc3', '#c4bbb0', '#b5aa9e', '#a69888'];
 
 export default function CategoryChart({ data }) {
+  const theme = useStore((s) => s.theme);
+  const colors = theme === 'dark' ? COLORS_DARK : COLORS_LIGHT;
+
   if (!data.length) return null;
 
   return (
@@ -33,7 +38,7 @@ export default function CategoryChart({ data }) {
             />
             <Bar dataKey="count" radius={[6, 6, 0, 0]}>
               {data.map((_, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                <Cell key={i} fill={colors[i % colors.length]} />
               ))}
             </Bar>
           </BarChart>
@@ -54,7 +59,7 @@ export default function CategoryChart({ data }) {
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${item.percentage}%`,
-                  backgroundColor: COLORS[i % COLORS.length],
+                  backgroundColor: colors[i % colors.length],
                 }}
               />
             </div>

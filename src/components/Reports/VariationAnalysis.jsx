@@ -12,7 +12,7 @@ export default function VariationAnalysis({ data }) {
         {data.map((category) => (
           <div key={category.categoryName}>
             <div className="mb-2 flex items-baseline justify-between">
-              <h4 className="font-semibold text-flamingo-600 dark:text-flamingo-400">
+              <h4 className="font-semibold accent-text">
                 {category.categoryName}
               </h4>
               <span className="text-sm text-gray-500">
@@ -34,7 +34,7 @@ export default function VariationAnalysis({ data }) {
                     <tr
                       key={item.name}
                       className={`border-t border-gray-50 dark:border-gray-800 ${
-                        idx === 0 ? 'bg-flamingo-50/50 dark:bg-flamingo-950/20' : ''
+                        idx === 0 ? 'bg-flamingo-50/50 dark:bg-cream-100/10' : ''
                       }`}
                     >
                       <td className="px-3 py-2.5 font-medium">

@@ -19,7 +19,7 @@ export default function AddStockModal({ categoryName, variation, onClose, onConf
           {categoryName} → {variation.name}
         </p>
         <p className="mt-2 text-sm">
-          Mevcut stok: <span className="font-bold text-flamingo-600">{variation.stock}</span>
+          Mevcut stok: <span className="font-bold accent-text">{variation.stock}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">

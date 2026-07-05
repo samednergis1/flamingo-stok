@@ -5,10 +5,14 @@ const SIZES = {
   xl: 'h-28 sm:h-32',
 };
 
-export default function Logo({ size = 'md', className = '' }) {
+export default function Logo({ size = 'md', className = '', forceLight = false }) {
+  const wrapperClass = forceLight
+    ? ''
+    : 'dark:rounded-xl dark:bg-cream-100/10 dark:px-2.5 dark:py-1';
+
   return (
     <span
-      className={`inline-flex items-center justify-center dark:rounded-xl dark:bg-[#f8ebe3]/95 dark:px-2.5 dark:py-1 dark:shadow-[0_0_20px_rgba(249,61,99,0.12)] ${className}`}
+      className={`inline-flex items-center justify-center ${wrapperClass} ${className}`}
     >
       <img
         src="/flamingo-logo-new.png"

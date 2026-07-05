@@ -70,13 +70,6 @@ export default function DataManagementTab() {
         </p>
       </div>
 
-      <div className="card animate-fade-in border-green-200/80 bg-green-50/60 dark:border-green-900/50 dark:bg-green-950/30">
-        <p className="text-sm text-green-800 dark:text-green-300">
-          📦 <strong>Kategoriler sabittir</strong> — tüm cihazlarda aynı ürün listesi görünür.
-          Stok ve satışlar tarayıcıda kaydedilir; cihazlar arası paylaşım için JSON yedek kullanın.
-        </p>
-      </div>
-
       {message && (
         <div
           className={`rounded-xl px-4 py-3 text-sm font-medium ${
@@ -158,7 +151,7 @@ export default function DataManagementTab() {
 function SummaryItem({ label, value }) {
   return (
     <div className="rounded-xl bg-gray-50 px-3 py-2.5 text-center dark:bg-gray-800">
-      <p className="text-xl font-bold text-flamingo-600 dark:text-flamingo-400">{value}</p>
+      <p className="text-xl font-bold accent-text">{value}</p>
       <p className="text-xs text-gray-500">{label}</p>
     </div>
   );

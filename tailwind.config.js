@@ -5,6 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
+        cream: {
+          50: '#faf8f5',
+          100: '#f5f0eb',
+          200: '#ebe4db',
+          300: '#ddd4c8',
+        },
         flamingo: {
           50: '#fff1f3',
           100: '#ffe0e5',

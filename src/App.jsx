@@ -18,6 +18,7 @@ const TABS = {
 export default function App() {
   const isAuthenticated = useStore((s) => s.isAuthenticated);
   const catalogLoaded = useStore((s) => s.catalogLoaded);
+  const theme = useStore((s) => s.theme);
   const activeTab = useStore((s) => s.activeTab);
   const initCatalog = useStore((s) => s.initCatalog);
   const initAuth = useStore((s) => s.initAuth);
@@ -27,6 +28,14 @@ export default function App() {
     initAuth();
     initCatalog();
   }, [initAuth, initCatalog]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      document.documentElement.classList.remove('dark');
+      return;
+    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [isAuthenticated, theme]);
 
   if (!isAuthenticated) {
     return <LoginPanel />;

@@ -78,7 +78,7 @@ export default function POSTab() {
         <div>
           <h2 className="text-xl font-bold">Hızlı Satış</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kategori seç → çeşit ekle → satışı tamamla
+            Kategori Seç → Çeşit Ekle → Satışı Tamamla
           </p>
         </div>
 

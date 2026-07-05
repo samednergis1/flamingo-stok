@@ -29,21 +29,21 @@ export default function LoginPanel() {
   };
 
   return (
-    <div className="app-bg theme-transition flex min-h-screen items-center justify-center p-4">
+    <div className="login-screen theme-transition flex min-h-screen items-center justify-center p-4">
       <div className="login-card animate-fade-in-up w-full max-w-md">
         <div className="mb-8 text-center">
-          <Logo size="xl" className="mx-auto mb-5 animate-float" />
-          <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
+          <Logo size="xl" className="mx-auto mb-5 animate-float" forceLight />
+          <p className="text-lg font-medium text-gray-700">
             Hoş Geldiniz!
           </p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-500">
             Stok & Satış Yönetim Paneli
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+            <label htmlFor="username" className="mb-1 block text-xs font-medium text-gray-500">
               Kullanıcı Adı
             </label>
             <input
@@ -58,7 +58,7 @@ export default function LoginPanel() {
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+            <label htmlFor="password" className="mb-1 block text-xs font-medium text-gray-500">
               Şifre
             </label>
             <input

@@ -64,11 +64,11 @@ export default function ReportsTab() {
         </p>
       </div>
 
-      <div className="card border-flamingo-200 bg-gradient-to-r from-flamingo-50 to-white dark:border-flamingo-800/60 dark:from-flamingo-950/30 dark:to-gray-900">
+      <div className="card border-flamingo-200 bg-gradient-to-r from-flamingo-50 to-white dark:border-gray-700 dark:from-gray-800/80 dark:to-gray-900">
         <div className="flex items-start gap-3">
           <span className="text-3xl">📅</span>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-flamingo-600 dark:text-flamingo-400">
+            <p className="text-xs font-semibold uppercase tracking-wide accent-text">
               {filterLabels[timeFilter]}
             </p>
             <p className="mt-1 text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -126,7 +126,7 @@ function StatCard({ label, value, icon, className = '' }) {
     <div className={`card flex items-center gap-3 ${className}`}>
       <span className="text-2xl">{icon}</span>
       <div>
-        <p className="text-2xl font-bold text-flamingo-600 dark:text-flamingo-400">{value}</p>
+        <p className="text-2xl font-bold accent-text">{value}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
       </div>
     </div>
