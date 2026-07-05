@@ -1,0 +1,20 @@
+const STORAGE_KEY = 'flamingo-bar-data';
+export const DATA_VERSION = 2;
+
+export function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function saveToStorage(data) {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ ...data, dataVersion: DATA_VERSION })
+  );
+}
+export { STORAGE_KEY };
