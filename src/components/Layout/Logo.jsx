@@ -7,11 +7,15 @@ const SIZES = {
 
 export default function Logo({ size = 'md', className = '' }) {
   return (
-    <img
-      src="/flamingo-logo-new.png"
-      alt="Flamingo Vitamin Bar & Cafe"
-      className={`w-auto object-contain dark:brightness-0 dark:invert ${SIZES[size]} ${className}`}
-      draggable={false}
-    />
+    <span
+      className={`inline-flex items-center justify-center dark:rounded-xl dark:bg-[#f8ebe3]/95 dark:px-2.5 dark:py-1 dark:shadow-[0_0_20px_rgba(249,61,99,0.12)] ${className}`}
+    >
+      <img
+        src="/flamingo-logo-new.png"
+        alt="Flamingo Vitamin Bar & Cafe"
+        className={`w-auto object-contain ${SIZES[size]}`}
+        draggable={false}
+      />
+    </span>
   );
 }

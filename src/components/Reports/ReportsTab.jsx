@@ -1,6 +1,11 @@
 import { useState, useMemo } from 'react';
 import useStore from '../../store/useStore';
-import { filterSalesByRange, formatReportPeriod, formatReportWeekday } from '../../utils/dateFilters';
+import {
+  filterSalesByRange,
+  formatReportPeriod,
+  formatReportWeekday,
+  toDateKey,
+} from '../../utils/dateFilters';
 import { analyzeSales } from '../../utils/exportImport';
 import TimeFilter from './TimeFilter';
 import CategoryChart from './CategoryChart';
@@ -12,10 +17,11 @@ export default function ReportsTab() {
   const [timeFilter, setTimeFilter] = useState('today');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
+  const [selectedDay, setSelectedDay] = useState(toDateKey());
 
   const filteredSales = useMemo(
-    () => filterSalesByRange(sales, timeFilter, customStart, customEnd),
-    [sales, timeFilter, customStart, customEnd]
+    () => filterSalesByRange(sales, timeFilter, customStart, customEnd, selectedDay),
+    [sales, timeFilter, customStart, customEnd, selectedDay]
   );
 
   const analytics = useMemo(
@@ -24,20 +30,29 @@ export default function ReportsTab() {
   );
 
   const periodLabel = useMemo(
-    () => formatReportPeriod(timeFilter, customStart, customEnd),
-    [timeFilter, customStart, customEnd]
+    () => formatReportPeriod(timeFilter, customStart, customEnd, selectedDay),
+    [timeFilter, customStart, customEnd, selectedDay]
   );
 
   const weekday = useMemo(
-    () => formatReportWeekday(timeFilter, customStart),
-    [timeFilter, customStart]
+    () => formatReportWeekday(timeFilter, customStart, selectedDay),
+    [timeFilter, customStart, selectedDay]
   );
 
   const filterLabels = {
     today: 'Günlük Rapor',
+    yesterday: 'Dünkü Özet',
+    day: 'Gün Raporu',
     week: 'Haftalık Rapor',
     month: 'Aylık Rapor',
     custom: 'Özel Dönem Raporu',
+  };
+
+  const handleFilterChange = (filter) => {
+    setTimeFilter(filter);
+    if (filter === 'day' && !selectedDay) {
+      setSelectedDay(toDateKey());
+    }
   };
 
   return (
@@ -49,7 +64,7 @@ export default function ReportsTab() {
         </p>
       </div>
 
-      <div className="card border-flamingo-200 bg-gradient-to-r from-flamingo-50 to-white dark:border-flamingo-900 dark:from-flamingo-950/40 dark:to-gray-900">
+      <div className="card border-flamingo-200 bg-gradient-to-r from-flamingo-50 to-white dark:border-flamingo-800/60 dark:from-flamingo-950/30 dark:to-gray-900">
         <div className="flex items-start gap-3">
           <span className="text-3xl">📅</span>
           <div>
@@ -68,11 +83,13 @@ export default function ReportsTab() {
 
       <TimeFilter
         active={timeFilter}
-        onChange={setTimeFilter}
+        onChange={handleFilterChange}
         customStart={customStart}
         customEnd={customEnd}
+        selectedDay={selectedDay}
         onCustomStartChange={setCustomStart}
         onCustomEndChange={setCustomEnd}
+        onSelectedDayChange={setSelectedDay}
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

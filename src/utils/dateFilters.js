@@ -24,12 +24,21 @@ export function startOfMonth(date) {
   return startOfDay(d);
 }
 
-export function getDateRange(filter, customStart, customEnd) {
+export function getDateRange(filter, customStart, customEnd, selectedDay) {
   const now = new Date();
 
   switch (filter) {
     case 'today':
       return { start: startOfDay(now), end: endOfDay(now) };
+    case 'yesterday': {
+      const y = new Date(now);
+      y.setDate(y.getDate() - 1);
+      return { start: startOfDay(y), end: endOfDay(y) };
+    }
+    case 'day': {
+      const d = selectedDay ? new Date(selectedDay) : now;
+      return { start: startOfDay(d), end: endOfDay(d) };
+    }
     case 'week':
       return { start: startOfWeek(now), end: endOfDay(now) };
     case 'month':
@@ -44,8 +53,8 @@ export function getDateRange(filter, customStart, customEnd) {
   }
 }
 
-export function filterSalesByRange(sales, filter, customStart, customEnd) {
-  const { start, end } = getDateRange(filter, customStart, customEnd);
+export function filterSalesByRange(sales, filter, customStart, customEnd, selectedDay) {
+  const { start, end } = getDateRange(filter, customStart, customEnd, selectedDay);
   return sales.filter((sale) => {
     const ts = new Date(sale.timestamp);
     return ts >= start && ts <= end;
@@ -69,24 +78,27 @@ export function formatShortDate(iso) {
   });
 }
 
-export function formatReportPeriod(filter, customStart, customEnd) {
-  const { start, end } = getDateRange(filter, customStart, customEnd);
+export function formatReportPeriod(filter, customStart, customEnd, selectedDay) {
+  const { start, end } = getDateRange(filter, customStart, customEnd, selectedDay);
 
   const full = (d) =>
     d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
   const short = (d) =>
     d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
-  const weekday = (d) => d.toLocaleDateString('tr-TR', { weekday: 'long' });
 
   switch (filter) {
     case 'today':
+    case 'yesterday':
+    case 'day':
       return full(start);
     case 'week':
       return `${short(start)} – ${full(end)}`;
     case 'month':
       return start.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
     case 'custom':
-      if (customStart && customEnd) return `${full(start)} – ${full(end)}`;
+      if (customStart && customEnd && customStart !== customEnd) {
+        return `${full(start)} – ${full(end)}`;
+      }
       if (customStart) return full(start);
       return full(start);
     default:
@@ -94,8 +106,22 @@ export function formatReportPeriod(filter, customStart, customEnd) {
   }
 }
 
-export function formatReportWeekday(filter, customStart) {
-  if (filter !== 'today') return null;
-  const { start } = getDateRange(filter, customStart, '');
+export function formatReportWeekday(filter, customStart, selectedDay) {
+  if (!['today', 'yesterday', 'day'].includes(filter)) return null;
+  const { start } = getDateRange(filter, customStart, '', selectedDay);
   return start.toLocaleDateString('tr-TR', { weekday: 'long' });
+}
+
+export function getYesterdayDateKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return toDateKey(d);
+}
+
+export function toDateKey(date = new Date()) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
