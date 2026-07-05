@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import useStore from '../../store/useStore';
 import CategoryCard from './CategoryCard';
-import AddCategoryForm from './AddCategoryForm';
 
 export default function InventoryTab() {
   const categories = useStore((s) => s.categories);
@@ -23,7 +22,9 @@ export default function InventoryTab() {
         </div>
       </div>
 
-      <AddCategoryForm />
+      <div className="card border-flamingo-200/80 bg-flamingo-50/40 text-sm text-gray-600 dark:border-flamingo-900/50 dark:bg-flamingo-950/20 dark:text-gray-300">
+        Ürün kategorileri sabittir — tüm cihazlarda aynı listeyi görürsünüz. Sadece stok miktarlarını güncelleyebilirsiniz.
+      </div>
 
       <div className="space-y-3">
         {categories.map((category) => (
@@ -35,14 +36,6 @@ export default function InventoryTab() {
           />
         ))}
       </div>
-
-      {categories.length === 0 && (
-        <div className="card py-12 text-center text-gray-500 dark:text-gray-400">
-          <p className="text-4xl">📦</p>
-          <p className="mt-2 font-medium">Henüz kategori yok</p>
-          <p className="text-sm">Yukarıdan ilk kategorinizi ekleyin</p>
-        </div>
-      )}
     </div>
   );
 }

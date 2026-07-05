@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import useStore from '../../store/useStore';
+import { extractStock } from '../../utils/catalog';
 import { exportDataAsJson, exportSalesAsCsv, parseImportFile } from '../../utils/exportImport';
 
 export default function DataManagementTab() {
@@ -7,7 +8,7 @@ export default function DataManagementTab() {
   const sales = useStore((s) => s.sales);
   const theme = useStore((s) => s.theme);
   const importData = useStore((s) => s.importData);
-  const resetToMock = useStore((s) => s.resetToMock);
+  const resetData = useStore((s) => s.resetData);
 
   const fileInputRef = useRef(null);
   const [message, setMessage] = useState(null);
@@ -23,7 +24,7 @@ export default function DataManagementTab() {
   };
 
   const handleExportJson = () => {
-    exportDataAsJson({ categories, sales, theme });
+    exportDataAsJson({ stock: extractStock(categories), sales, theme });
     showMessage('success', 'JSON yedek indirildi ✓');
   };
 
@@ -42,12 +43,8 @@ export default function DataManagementTab() {
 
     try {
       const data = await parseImportFile(file);
-      if (
-        confirm(
-          'Mevcut verilerin üzerine yazılacak. Devam etmek istiyor musunuz?'
-        )
-      ) {
-        importData(data);
+      if (confirm('Mevcut stok ve satış verilerinin üzerine yazılacak. Devam?')) {
+        await importData(data);
         showMessage('success', 'Veriler başarıyla geri yüklendi ✓');
       }
     } catch (err) {
@@ -57,14 +54,10 @@ export default function DataManagementTab() {
     e.target.value = '';
   };
 
-  const handleReset = () => {
-    if (
-      confirm(
-        'Tüm veriler silinip örnek verilerle sıfırlanacak. Emin misiniz?'
-      )
-    ) {
-      resetToMock();
-      showMessage('success', 'Örnek verilerle sıfırlandı ✓');
+  const handleReset = async () => {
+    if (confirm('Tüm stok ve satış kayıtları silinecek. Emin misiniz?')) {
+      await resetData();
+      showMessage('success', 'Stok ve satışlar sıfırlandı ✓');
     }
   };
 
@@ -73,14 +66,14 @@ export default function DataManagementTab() {
       <div>
         <h2 className="text-xl font-bold">Veri Yönetimi</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Yedekleme, geri yükleme ve veri özeti
+          Stok ve satış yedekleme
         </p>
       </div>
 
       <div className="card animate-fade-in border-green-200/80 bg-green-50/60 dark:border-green-900/50 dark:bg-green-950/30">
         <p className="text-sm text-green-800 dark:text-green-300">
-          💾 Tüm değişiklikler tarayıcınızda otomatik kaydedilir. Bilgisayarı kapatsanız bile kalır.
-          Ek güvenlik için ara sıra <strong>JSON yedek</strong> alın.
+          📦 <strong>Kategoriler sabittir</strong> — tüm cihazlarda aynı ürün listesi görünür.
+          Stok ve satışlar tarayıcıda kaydedilir; cihazlar arası paylaşım için JSON yedek kullanın.
         </p>
       </div>
 
@@ -112,7 +105,7 @@ export default function DataManagementTab() {
       <div className="card space-y-4">
         <h3 className="font-bold">Dışa Aktar</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Tüm ürün, stok ve satış geçmişini yedekleyin
+          Stok miktarları ve satış geçmişini yedekleyin
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <button type="button" onClick={handleExportJson} className="btn-primary flex-1">
@@ -127,7 +120,7 @@ export default function DataManagementTab() {
       <div className="card space-y-4">
         <h3 className="font-bold">İçe Aktar</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Daha önce indirdiğiniz JSON yedek dosyasını geri yükleyin
+          JSON yedek dosyasından stok ve satışları geri yükleyin
         </p>
         <input
           ref={fileInputRef}
@@ -148,14 +141,14 @@ export default function DataManagementTab() {
       <div className="card border-red-200 dark:border-red-900">
         <h3 className="font-bold text-red-600 dark:text-red-400">Tehlikeli Bölge</h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Tüm verileri silip örnek verilerle baştan başlar
+          Stok ve satış kayıtlarını sıfırlar (kategoriler değişmez)
         </p>
         <button
           type="button"
           onClick={handleReset}
           className="mt-3 w-full rounded-xl border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
         >
-          Örnek Verilere Sıfırla
+          Stok & Satışları Sıfırla
         </button>
       </div>
     </div>

@@ -1,39 +1,52 @@
 import { create } from 'zustand';
 import { loadFromStorage, saveToStorage, DATA_VERSION } from '../utils/storage';
-import { getInitialData, generateId } from '../utils/mockData';
+import { generateId } from '../utils/mockData';
 import { getSession, saveSession, clearSession, validateLogin } from '../utils/auth';
+import {
+  fetchCatalog,
+  mergeCatalogWithStock,
+  extractStock,
+  migrateStockFromLegacy,
+} from '../utils/catalog';
 
-function hydrate() {
-  const stored = loadFromStorage();
-  if (stored?.categories?.length) {
-    if (stored.dataVersion !== DATA_VERSION) {
-      const migrated = { categories: stored.categories, sales: [], theme: stored.theme ?? 'light' };
-      saveToStorage(migrated);
-      return migrated;
-    }
-    return {
-      categories: stored.categories,
-      sales: stored.sales ?? [],
-      theme: stored.theme ?? 'light',
-    };
-  }
-  return getInitialData();
-}
-
-function hydrateAuth() {
-  const session = getSession();
-  return {
-    isAuthenticated: !!session,
-    username: session?.username ?? null,
-  };
+function persist(state) {
+  saveToStorage({
+    stock: extractStock(state.categories),
+    sales: state.sales,
+    theme: state.theme,
+  });
 }
 
 const useStore = create((set, get) => ({
-  ...hydrate(),
+  categories: [],
+  sales: [],
+  theme: 'light',
+  catalogLoaded: false,
   ...hydrateAuth(),
+
   activeTab: 'inventory',
 
   setActiveTab: (tab) => set({ activeTab: tab }),
+
+  initCatalog: async () => {
+    const catalog = await fetchCatalog();
+    const stored = loadFromStorage();
+
+    let stock = stored?.stock ?? {};
+    let sales = stored?.sales ?? [];
+    const theme = stored?.theme ?? 'light';
+
+    if (stored?.dataVersion !== DATA_VERSION && stored?.categories?.length) {
+      stock = migrateStockFromLegacy(stored.categories, catalog.categories);
+      sales = stored.sales ?? [];
+    }
+
+    const categories = mergeCatalogWithStock(catalog.categories, stock);
+
+    saveToStorage({ stock, sales, theme });
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    set({ categories, sales, theme, catalogLoaded: true });
+  },
 
   login: (password, username = '') => {
     if (!validateLogin(password)) return false;
@@ -59,68 +72,13 @@ const useStore = create((set, get) => ({
     set((state) => {
       const theme = state.theme === 'light' ? 'dark' : 'light';
       document.documentElement.classList.toggle('dark', theme === 'dark');
-      const next = { ...state, theme };
-      saveToStorage({ categories: next.categories, sales: next.sales, theme: next.theme });
+      persist({ ...state, theme });
       return { theme };
     }),
 
   initTheme: () => {
     const theme = get().theme;
     document.documentElement.classList.toggle('dark', theme === 'dark');
-  },
-
-  persist: () => {
-    const { categories, sales, theme } = get();
-    saveToStorage({ categories, sales, theme });
-  },
-
-  addCategory: (name) => {
-    const trimmed = name.trim();
-    if (!trimmed) return false;
-    set((state) => {
-      const categories = [...state.categories, { id: generateId(), name: trimmed, variations: [] }];
-      saveToStorage({ categories, sales: state.sales, theme: state.theme });
-      return { categories };
-    });
-    return true;
-  },
-
-  deleteCategory: (categoryId) => {
-    set((state) => {
-      const categories = state.categories.filter((c) => c.id !== categoryId);
-      saveToStorage({ categories, sales: state.sales, theme: state.theme });
-      return { categories };
-    });
-  },
-
-  addVariation: (categoryId, name) => {
-    const trimmed = name.trim();
-    if (!trimmed) return false;
-    set((state) => {
-      const categories = state.categories.map((c) =>
-        c.id === categoryId
-          ? {
-              ...c,
-              variations: [...c.variations, { id: generateId(), name: trimmed, stock: 0 }],
-            }
-          : c
-      );
-      saveToStorage({ categories, sales: state.sales, theme: state.theme });
-      return { categories };
-    });
-    return true;
-  },
-
-  deleteVariation: (categoryId, variationId) => {
-    set((state) => {
-      const categories = state.categories.map((c) =>
-        c.id === categoryId
-          ? { ...c, variations: c.variations.filter((v) => v.id !== variationId) }
-          : c
-      );
-      saveToStorage({ categories, sales: state.sales, theme: state.theme });
-      return { categories };
-    });
   },
 
   addStock: (categoryId, variationId, amount) => {
@@ -137,7 +95,7 @@ const useStore = create((set, get) => ({
             }
           : c
       );
-      saveToStorage({ categories, sales: state.sales, theme: state.theme });
+      persist({ ...state, categories });
       return { categories };
     });
     return true;
@@ -181,31 +139,43 @@ const useStore = create((set, get) => ({
         }),
       }));
       const sales = [...state.sales, sale];
-      saveToStorage({ categories, sales, theme: state.theme });
+      persist({ ...state, categories, sales });
       return { categories, sales };
     });
 
     return { success: true };
   },
 
-  importData: (data) => {
+  importData: async (data) => {
+    const catalog = await fetchCatalog();
+    const stock = data.stock ?? {};
+    const sales = Array.isArray(data.sales) ? data.sales : [];
+    const theme = data.theme === 'dark' ? 'dark' : 'light';
+    const categories = mergeCatalogWithStock(catalog.categories, stock);
+
     set((state) => {
-      saveToStorage({ categories: data.categories, sales: data.sales, theme: data.theme });
-      document.documentElement.classList.toggle('dark', data.theme === 'dark');
-      return {
-        categories: data.categories,
-        sales: data.sales,
-        theme: data.theme,
-      };
+      persist({ ...state, categories, sales, theme });
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      return { categories, sales, theme };
     });
   },
 
-  resetToMock: () => {
-    const data = getInitialData();
+  resetData: async () => {
+    const catalog = await fetchCatalog();
+    const categories = mergeCatalogWithStock(catalog.categories, {});
+    const data = { stock: {}, sales: [], theme: 'light' };
     saveToStorage(data);
-    set({ categories: data.categories, sales: data.sales, theme: data.theme });
     document.documentElement.classList.toggle('dark', false);
+    set({ categories, sales: [], theme: 'light' });
   },
 }));
+
+function hydrateAuth() {
+  const session = getSession();
+  return {
+    isAuthenticated: !!session,
+    username: session?.username ?? null,
+  };
+}
 
 export default useStore;

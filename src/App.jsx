@@ -17,18 +17,30 @@ const TABS = {
 
 export default function App() {
   const isAuthenticated = useStore((s) => s.isAuthenticated);
+  const catalogLoaded = useStore((s) => s.catalogLoaded);
   const activeTab = useStore((s) => s.activeTab);
-  const initTheme = useStore((s) => s.initTheme);
+  const initCatalog = useStore((s) => s.initCatalog);
   const initAuth = useStore((s) => s.initAuth);
   const ActiveComponent = TABS[activeTab];
 
   useEffect(() => {
     initAuth();
-    initTheme();
-  }, [initAuth, initTheme]);
+    initCatalog();
+  }, [initAuth, initCatalog]);
 
   if (!isAuthenticated) {
     return <LoginPanel />;
+  }
+
+  if (!catalogLoaded) {
+    return (
+      <div className="app-bg flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-4xl animate-float">🦩</p>
+          <p className="mt-3 text-sm text-gray-500">Yükleniyor...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

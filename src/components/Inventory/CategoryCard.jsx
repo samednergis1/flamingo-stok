@@ -3,75 +3,37 @@ import useStore from '../../store/useStore';
 import AddStockModal from './AddStockModal';
 
 export default function CategoryCard({ category, isExpanded, onToggle }) {
-  const addVariation = useStore((s) => s.addVariation);
-  const deleteCategory = useStore((s) => s.deleteCategory);
-  const deleteVariation = useStore((s) => s.deleteVariation);
-
-  const [newVariation, setNewVariation] = useState('');
   const [stockModal, setStockModal] = useState(null);
 
   const categoryStock = category.variations.reduce((s, v) => s + v.stock, 0);
   const lowStock = category.variations.filter((v) => v.stock <= 5);
 
-  const handleAddVariation = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (addVariation(category.id, newVariation)) setNewVariation('');
-  };
-
   return (
     <>
       <div className="card-interactive overflow-hidden p-0">
-        <div className="flex w-full items-center justify-between px-4 py-3.5 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-          <button
-            type="button"
-            onClick={onToggle}
-            className="flex flex-1 items-center gap-3 text-left"
-          >
-            <span className={`text-xl transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
-              ▶
-            </span>
-            <div>
-              <h3 className="font-semibold">{category.name}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {category.variations.length} çeşit · {categoryStock} stok
-                {lowStock.length > 0 && (
-                  <span className="ml-2 text-amber-600 dark:text-amber-400">
-                    ⚠ {lowStock.length} düşük
-                  </span>
-                )}
-              </p>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (confirm(`"${category.name}" kategorisini silmek istediğinize emin misiniz?`)) {
-                deleteCategory(category.id);
-              }
-            }}
-            className="btn-ghost p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-            aria-label="Kategoriyi sil"
-          >
-            🗑
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        >
+          <span className={`text-xl transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
+            ▶
+          </span>
+          <div>
+            <h3 className="font-semibold">{category.name}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {category.variations.length} çeşit · {categoryStock} stok
+              {lowStock.length > 0 && (
+                <span className="ml-2 text-amber-600 dark:text-amber-400">
+                  ⚠ {lowStock.length} düşük
+                </span>
+              )}
+            </p>
+          </div>
+        </button>
 
         {isExpanded && (
           <div className="animate-fade-in-up border-t border-gray-100 px-4 py-3 dark:border-gray-800">
-            <form onSubmit={handleAddVariation} className="mb-3 flex gap-2">
-              <input
-                type="text"
-                value={newVariation}
-                onChange={(e) => setNewVariation(e.target.value)}
-                placeholder="Yeni çeşit adı..."
-                className="input-field flex-1"
-              />
-              <button type="submit" className="btn-secondary shrink-0" disabled={!newVariation.trim()}>
-                + Çeşit
-              </button>
-            </form>
-
             <div className="space-y-2">
               {category.variations.map((variation) => (
                 <div
@@ -92,33 +54,15 @@ export default function CategoryCard({ category, isExpanded, onToggle }) {
                     </span>
                     <span className="font-medium">{variation.name}</span>
                   </div>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setStockModal({ categoryId: category.id, variation })}
-                      className="btn-primary px-3 py-1.5 text-xs"
-                    >
-                      + Stok
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (confirm(`"${variation.name}" çeşidini silmek istediğinize emin misiniz?`)) {
-                          deleteVariation(category.id, variation.id);
-                        }
-                      }}
-                      className="btn-ghost p-1.5 text-red-500"
-                      aria-label="Çeşidi sil"
-                    >
-                      ✕
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStockModal({ categoryId: category.id, variation })}
+                    className="btn-primary px-3 py-1.5 text-xs"
+                  >
+                    + Stok
+                  </button>
                 </div>
               ))}
-
-              {category.variations.length === 0 && (
-                <p className="py-4 text-center text-sm text-gray-400">Henüz çeşit eklenmedi</p>
-              )}
             </div>
           </div>
         )}

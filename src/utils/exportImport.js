@@ -1,3 +1,5 @@
+import { extractStock } from '../utils/catalog';
+
 export function exportDataAsJson(data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -44,15 +46,26 @@ export function parseImportFile(file) {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        if (!data.categories || !Array.isArray(data.categories)) {
-          reject(new Error('Geçersiz yedek dosyası: kategori bilgisi bulunamadı'));
+
+        if (data.stock && typeof data.stock === 'object') {
+          resolve({
+            stock: data.stock,
+            sales: Array.isArray(data.sales) ? data.sales : [],
+            theme: data.theme === 'dark' ? 'dark' : 'light',
+          });
           return;
         }
-        resolve({
-          categories: data.categories,
-          sales: Array.isArray(data.sales) ? data.sales : [],
-          theme: data.theme === 'dark' ? 'dark' : 'light',
-        });
+
+        if (data.categories && Array.isArray(data.categories)) {
+          resolve({
+            stock: extractStock(data.categories),
+            sales: Array.isArray(data.sales) ? data.sales : [],
+            theme: data.theme === 'dark' ? 'dark' : 'light',
+          });
+          return;
+        }
+
+        reject(new Error('Geçersiz yedek dosyası'));
       } catch {
         reject(new Error('Geçersiz JSON dosyası'));
       }
