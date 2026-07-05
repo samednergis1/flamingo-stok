@@ -1,6 +1,6 @@
 export default function Cart({ items, total, onUpdateQty, onClear, onComplete }) {
   return (
-    <div className="card border-flamingo-200 bg-white/95 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
+    <div className="card border-flamingo-200 bg-white/95 backdrop-blur dark:border-white/5 dark:bg-slate-900/95">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-bold">
           Sepet
@@ -24,7 +24,7 @@ export default function Cart({ items, total, onUpdateQty, onClear, onComplete })
           {items.map((item) => (
             <div
               key={`${item.categoryId}-${item.variationId}`}
-              className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 dark:bg-gray-800"
+              className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 dark:border dark:border-white/5 dark:bg-slate-800/60"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{item.variationName}</p>
@@ -36,7 +36,7 @@ export default function Cart({ items, total, onUpdateQty, onClear, onComplete })
                   onClick={() =>
                     onUpdateQty(item.categoryId, item.variationId, item.quantity - 1)
                   }
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold dark:bg-gray-700"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold dark:bg-slate-700 dark:text-zinc-200"
                 >
                   −
                 </button>
@@ -46,7 +46,7 @@ export default function Cart({ items, total, onUpdateQty, onClear, onComplete })
                   onClick={() =>
                     onUpdateQty(item.categoryId, item.variationId, item.quantity + 1)
                   }
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-flamingo-100 text-lg font-bold text-flamingo-600 dark:bg-cream-100/20 dark:text-cream-100"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-flamingo-100 text-lg font-bold text-flamingo-600 dark:bg-rose-500/20 dark:text-rose-400"
                 >
                   +
                 </button>

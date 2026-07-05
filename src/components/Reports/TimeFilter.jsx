@@ -28,7 +28,7 @@ export default function TimeFilter({
             className={`rounded-xl px-4 py-2 text-sm font-medium transition active:scale-95 ${
               active === f.id
                 ? 'filter-btn-active'
-                : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700'
+                : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-zinc-300 dark:ring-white/10 dark:hover:bg-slate-700'
             }`}
           >
             {f.label}

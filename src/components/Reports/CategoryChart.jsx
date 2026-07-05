@@ -10,7 +10,7 @@ import {
 import useStore from '../../store/useStore';
 
 const COLORS_LIGHT = ['#f93d63', '#ff6480', '#ff9dad', '#ffc6d0', '#e71d4f', '#c30f3f', '#a3103a'];
-const COLORS_DARK = ['#f5f0eb', '#ebe4db', '#ddd4c8', '#d4ccc3', '#c4bbb0', '#b5aa9e', '#a69888'];
+const COLORS_DARK = ['#e8b896', '#d4a574', '#fcd5b0', '#c9956a', '#f5dcc8', '#b8895a', '#a67c52'];
 
 export default function CategoryChart({ data }) {
   const theme = useStore((s) => s.theme);
@@ -54,7 +54,7 @@ export default function CategoryChart({ data }) {
                 {item.count} adet ({item.percentage}%)
               </span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+            <div className="h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-800">
               <div
                 className="h-full rounded-full transition-all"
                 style={{

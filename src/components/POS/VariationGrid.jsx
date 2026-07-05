@@ -25,14 +25,14 @@ export default function VariationGrid({ category, onAdd }) {
             }`}
           >
             <div className="flex items-start justify-between gap-1">
-              <span className="text-sm font-semibold leading-tight">{variation.name}</span>
+              <span className="text-sm font-semibold leading-tight dark:text-zinc-100">{variation.name}</span>
               <span
                 className={`shrink-0 rounded-lg px-1.5 py-0.5 text-xs font-bold ${
                   outOfStock
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900/40'
+                    ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400'
                     : lowStock
-                      ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800'
+                      ? 'bg-amber-100 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400'
+                      : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-zinc-300'
                 }`}
               >
                 {variation.stock}

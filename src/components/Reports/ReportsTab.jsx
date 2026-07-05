@@ -64,14 +64,14 @@ export default function ReportsTab() {
         </p>
       </div>
 
-      <div className="card border-flamingo-200 bg-gradient-to-r from-flamingo-50 to-white dark:border-gray-700 dark:from-gray-800/80 dark:to-gray-900">
+      <div className="card border-flamingo-200 bg-gradient-to-r from-flamingo-50 to-white dark:border-white/5 dark:from-slate-900 dark:to-slate-900">
         <div className="flex items-start gap-3">
           <span className="text-3xl">📅</span>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide accent-text">
               {filterLabels[timeFilter]}
             </p>
-            <p className="mt-1 text-lg font-bold text-gray-900 dark:text-gray-100">
+            <p className="mt-1 text-lg font-bold text-gray-900 dark:text-zinc-100">
               {periodLabel}
             </p>
             {weekday && (

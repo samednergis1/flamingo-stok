@@ -14,7 +14,7 @@ export default function SaleSuccessOverlay({ total, onClose }) {
       aria-label="Satış tamamlandı"
     >
       <div
-        className="sale-overlay-card animate-fade-in-up w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl dark:bg-gray-900"
+        className="sale-overlay-card animate-fade-in-up w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-2xl dark:border-white/5 dark:bg-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl dark:bg-green-900/40">

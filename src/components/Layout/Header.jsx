@@ -8,12 +8,12 @@ export default function Header() {
   const logout = useStore((s) => s.logout);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-200/80 bg-white/80 backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-900/80">
+    <header className="surface-header sticky top-0 z-40 border-b">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-3 animate-slide-in">
           <Logo size="sm" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+            <p className="truncate text-xs text-gray-500 dark:text-zinc-400">
               {username ? `Hoş geldin, ${username}` : 'Stok & Satış Yönetimi'}
             </p>
           </div>
@@ -40,7 +40,7 @@ export default function Header() {
           <button
             type="button"
             onClick={logout}
-            className="btn-ghost rounded-xl px-3 py-2 text-xs text-gray-500 sm:text-sm"
+            className="btn-ghost rounded-xl px-3 py-2 text-xs sm:text-sm"
             title="Çıkış yap"
           >
             Çıkış

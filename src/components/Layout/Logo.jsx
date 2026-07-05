@@ -6,18 +6,16 @@ const SIZES = {
 };
 
 export default function Logo({ size = 'md', className = '', forceLight = false }) {
-  const wrapperClass = forceLight
+  const imgClass = forceLight
     ? ''
-    : 'dark:rounded-xl dark:bg-cream-100/10 dark:px-2.5 dark:py-1';
+    : 'dark:brightness-0 dark:invert';
 
   return (
-    <span
-      className={`inline-flex items-center justify-center ${wrapperClass} ${className}`}
-    >
+    <span className={`inline-flex items-center justify-center ${className}`}>
       <img
         src="/flamingo-logo-new.png"
         alt="Flamingo Vitamin Bar & Cafe"
-        className={`w-auto object-contain ${SIZES[size]}`}
+        className={`w-auto object-contain ${SIZES[size]} ${imgClass}`}
         draggable={false}
       />
     </span>

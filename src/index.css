@@ -15,14 +15,14 @@
   }
 
   body {
-    @apply text-gray-900 dark:text-gray-100;
+    @apply text-gray-900 dark:text-zinc-100;
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 }
 
 @layer components {
   .app-bg {
-    @apply relative min-h-screen bg-gray-50 dark:bg-gray-950;
+    @apply relative min-h-screen bg-gray-50 dark:bg-slate-950;
     background-image:
       radial-gradient(ellipse at 0% 0%, rgba(249, 61, 99, 0.08) 0%, transparent 50%),
       radial-gradient(ellipse at 100% 100%, rgba(249, 61, 99, 0.06) 0%, transparent 50%);
@@ -30,8 +30,12 @@
 
   .dark .app-bg {
     background-image:
-      radial-gradient(ellipse at 0% 0%, rgba(245, 240, 235, 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 100% 100%, rgba(245, 240, 235, 0.03) 0%, transparent 50%);
+      linear-gradient(30deg, rgba(232, 184, 150, 0.035) 12%, transparent 12.5%, transparent 87%, rgba(232, 184, 150, 0.035) 87.5%, rgba(232, 184, 150, 0.035)),
+      linear-gradient(150deg, rgba(232, 184, 150, 0.035) 12%, transparent 12.5%, transparent 87%, rgba(232, 184, 150, 0.035) 87.5%, rgba(232, 184, 150, 0.035)),
+      linear-gradient(60deg, rgba(232, 184, 150, 0.02) 25%, transparent 25.5%, transparent 75%, rgba(232, 184, 150, 0.02) 75%, rgba(232, 184, 150, 0.02)),
+      radial-gradient(ellipse at 15% 10%, rgba(232, 184, 150, 0.07) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 90%, rgba(244, 63, 94, 0.05) 0%, transparent 45%);
+    background-size: 72px 124px, 72px 124px, 48px 84px, 100% 100%, 100% 100%;
   }
 
   .login-screen {
@@ -46,28 +50,32 @@
   }
 
   .dark .btn-primary {
-    @apply bg-cream-100 text-gray-900 shadow-sm hover:bg-white hover:shadow-md;
-    --tw-shadow-color: rgba(245, 240, 235, 0.15);
+    @apply bg-rose-500 text-white hover:bg-rose-600;
+    box-shadow: 0 0 18px rgba(244, 63, 94, 0.28);
+  }
+
+  .dark .btn-primary:hover {
+    box-shadow: 0 0 24px rgba(244, 63, 94, 0.38);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-white/10 dark:bg-slate-800 dark:text-zinc-200 dark:hover:bg-slate-700;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-gray-100 active:scale-[0.97] dark:text-gray-300 dark:hover:bg-gray-800;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-gray-100 active:scale-[0.97] dark:text-rose-gold-300 dark:hover:bg-slate-800/80 dark:hover:text-rose-gold-200;
   }
 
   .card {
-    @apply rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 dark:border-gray-800 dark:bg-gray-900;
+    @apply rounded-2xl border border-gray-200 bg-white p-4 text-gray-900 shadow-sm transition-all duration-200 dark:border-white/5 dark:bg-slate-900 dark:text-zinc-100;
   }
 
   .card-interactive {
-    @apply card hover:-translate-y-0.5 hover:border-flamingo-200 hover:shadow-md dark:hover:border-cream-300/30;
+    @apply card hover:-translate-y-0.5 hover:border-flamingo-200 hover:shadow-md dark:hover:border-white/10 dark:hover:shadow-[0_4px_24px_rgba(0,0,0,0.35)];
   }
 
   .input-field {
-    @apply w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition-all duration-200 focus:border-flamingo-400 focus:ring-2 focus:ring-flamingo-100 dark:border-gray-700 dark:bg-gray-800 dark:focus:border-cream-300 dark:focus:ring-cream-200/20;
+    @apply w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-flamingo-400 focus:ring-2 focus:ring-flamingo-100 dark:border-white/10 dark:bg-slate-800 dark:text-zinc-100 dark:focus:border-rose-gold-300 dark:focus:ring-rose-gold-300/20;
   }
 
   .tab-btn {
@@ -75,11 +83,18 @@
   }
 
   .tab-btn-active {
-    @apply scale-[1.02] bg-flamingo-50 text-flamingo-600 shadow-sm dark:bg-cream-100/15 dark:text-cream-100;
+    @apply scale-[1.02] bg-flamingo-50 text-flamingo-600 shadow-sm;
+  }
+
+  .dark .tab-btn-active {
+    @apply bg-rose-500/15 text-rose-400;
+    box-shadow:
+      0 0 16px rgba(244, 63, 94, 0.22),
+      0 0 32px rgba(244, 63, 94, 0.08);
   }
 
   .tab-btn-inactive {
-    @apply text-gray-500 hover:scale-[1.01] hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200;
+    @apply text-gray-500 hover:scale-[1.01] hover:bg-gray-100 hover:text-gray-700 dark:text-zinc-400 dark:hover:bg-slate-800/60 dark:hover:text-zinc-200;
   }
 
   .tab-icon-active {
@@ -87,11 +102,11 @@
   }
 
   .toast-success {
-    @apply animate-fade-in-up rounded-xl bg-green-100 px-4 py-3 text-sm font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300;
+    @apply animate-fade-in-up rounded-xl bg-green-100 px-4 py-3 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300;
   }
 
   .toast-error {
-    @apply animate-fade-in-up rounded-xl bg-red-100 px-4 py-3 text-sm font-medium text-red-800 dark:bg-red-900/40 dark:text-red-300;
+    @apply animate-fade-in-up rounded-xl bg-red-100 px-4 py-3 text-sm font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300;
   }
 
   .page-enter {
@@ -110,6 +125,10 @@
     @apply scale-110;
   }
 
+  .stock-badge-low {
+    @apply bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-400;
+  }
+
   .sale-overlay-card {
     @apply animate-scale-in;
   }
@@ -119,15 +138,24 @@
   }
 
   .accent-text {
-    @apply text-flamingo-600 dark:text-cream-100;
+    @apply text-flamingo-600 dark:text-rose-gold-300;
   }
 
   .accent-badge {
-    @apply bg-flamingo-100 text-flamingo-600 dark:bg-cream-100/15 dark:text-cream-100;
+    @apply bg-flamingo-100 text-flamingo-600 dark:bg-rose-500/15 dark:text-rose-400;
   }
 
   .filter-btn-active {
-    @apply bg-flamingo-500 text-white shadow-sm dark:bg-cream-100 dark:text-gray-900 dark:shadow-none;
+    @apply bg-flamingo-500 text-white shadow-sm;
+  }
+
+  .dark .filter-btn-active {
+    @apply bg-rose-500/20 text-rose-400;
+    box-shadow: 0 0 14px rgba(244, 63, 94, 0.2);
+  }
+
+  .surface-header {
+    @apply border-gray-200/80 bg-white/80 backdrop-blur-md dark:border-white/5 dark:bg-slate-950/85;
   }
 }
 

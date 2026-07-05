@@ -12,7 +12,7 @@ export default function TabNav() {
   const setActiveTab = useStore((s) => s.setActiveTab);
 
   return (
-    <nav className="sticky top-[57px] z-30 border-b border-gray-200/80 bg-white/90 backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-900/90">
+    <nav className="surface-header sticky top-[57px] z-30 border-b">
       <div className="mx-auto flex max-w-6xl gap-1 px-3 py-2 sm:gap-2 sm:px-6 sm:py-2.5">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;

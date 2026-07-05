@@ -20,10 +20,10 @@ export default function VariationAnalysis({ data }) {
               </span>
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
+            <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-white/5">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 text-left text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                  <tr className="bg-gray-50 text-left text-xs text-gray-500 dark:bg-slate-800 dark:text-zinc-400">
                     <th className="px-3 py-2 font-medium">Çeşit</th>
                     <th className="px-3 py-2 text-right font-medium">Adet</th>
                     <th className="px-3 py-2 text-right font-medium">Oran</th>
@@ -33,8 +33,8 @@ export default function VariationAnalysis({ data }) {
                   {category.items.map((item, idx) => (
                     <tr
                       key={item.name}
-                      className={`border-t border-gray-50 dark:border-gray-800 ${
-                        idx === 0 ? 'bg-flamingo-50/50 dark:bg-cream-100/10' : ''
+                      className={`border-t border-gray-50 dark:border-white/5 ${
+                        idx === 0 ? 'bg-flamingo-50/50 dark:bg-rose-500/10' : ''
                       }`}
                     >
                       <td className="px-3 py-2.5 font-medium">

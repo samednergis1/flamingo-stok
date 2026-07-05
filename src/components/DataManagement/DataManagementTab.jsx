@@ -150,7 +150,7 @@ export default function DataManagementTab() {
 
 function SummaryItem({ label, value }) {
   return (
-    <div className="rounded-xl bg-gray-50 px-3 py-2.5 text-center dark:bg-gray-800">
+    <div className="rounded-xl bg-gray-50 px-3 py-2.5 text-center dark:border dark:border-white/5 dark:bg-slate-800">
       <p className="text-xl font-bold accent-text">{value}</p>
       <p className="text-xs text-gray-500">{label}</p>
     </div>

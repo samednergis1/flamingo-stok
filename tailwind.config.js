@@ -5,6 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        'rose-gold': {
+          200: '#f5dcc8',
+          300: '#e8b896',
+          400: '#d4a574',
+        },
         cream: {
           50: '#faf8f5',
           100: '#f5f0eb',
