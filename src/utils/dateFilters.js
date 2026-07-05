@@ -99,3 +99,26 @@ export function formatReportWeekday(filter, customStart) {
   const { start } = getDateRange(filter, customStart, '');
   return start.toLocaleDateString('tr-TR', { weekday: 'long' });
 }
+
+export function toDateKey(date = new Date()) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function formatDayLabel(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    weekday: 'long',
+  });
+}
+
+export function filterSalesByDateKey(sales, dateKey) {
+  return sales.filter((sale) => toDateKey(new Date(sale.timestamp)) === dateKey);
+}

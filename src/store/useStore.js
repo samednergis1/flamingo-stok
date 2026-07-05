@@ -8,12 +8,15 @@ import {
   extractStock,
   migrateStockFromLegacy,
 } from '../utils/catalog';
+import { toDateKey, filterSalesByDateKey } from '../utils/dateFilters';
+import { analyzeSales } from '../utils/exportImport';
 
 function persist(state) {
   saveToStorage({
     stock: extractStock(state.categories),
     sales: state.sales,
     theme: state.theme,
+    lastActiveDate: state.lastActiveDate,
   });
 }
 
@@ -22,6 +25,10 @@ const useStore = create((set, get) => ({
   sales: [],
   theme: 'light',
   catalogLoaded: false,
+  showEndOfDayModal: false,
+  endOfDayDate: null,
+  endOfDaySummary: null,
+  lastActiveDate: null,
   ...hydrateAuth(),
 
   activeTab: 'inventory',
@@ -43,9 +50,45 @@ const useStore = create((set, get) => ({
 
     const categories = mergeCatalogWithStock(catalog.categories, stock);
 
-    saveToStorage({ stock, sales, theme });
+    const today = toDateKey();
+    let lastActiveDate = stored?.lastActiveDate ?? null;
+    let showEndOfDayModal = false;
+    let endOfDayDate = null;
+    let endOfDaySummary = null;
+
+    if (!lastActiveDate) {
+      lastActiveDate = today;
+    } else if (lastActiveDate !== today) {
+      endOfDayDate = lastActiveDate;
+      endOfDaySummary = analyzeSales(filterSalesByDateKey(sales, lastActiveDate));
+      showEndOfDayModal = true;
+    }
+
+    saveToStorage({ stock, sales, theme, lastActiveDate });
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    set({ categories, sales, theme, catalogLoaded: true });
+    set({
+      categories,
+      sales,
+      theme,
+      catalogLoaded: true,
+      lastActiveDate,
+      showEndOfDayModal,
+      endOfDayDate,
+      endOfDaySummary,
+    });
+  },
+
+  dismissEndOfDay: () => {
+    const today = toDateKey();
+    set((state) => {
+      persist({ ...state, lastActiveDate: today });
+      return {
+        lastActiveDate: today,
+        showEndOfDayModal: false,
+        endOfDayDate: null,
+        endOfDaySummary: null,
+      };
+    });
   },
 
   login: (password, username = '') => {
@@ -154,7 +197,7 @@ const useStore = create((set, get) => ({
     const categories = mergeCatalogWithStock(catalog.categories, stock);
 
     set((state) => {
-      persist({ ...state, categories, sales, theme });
+      persist({ ...state, categories, sales, theme, lastActiveDate: state.lastActiveDate });
       document.documentElement.classList.toggle('dark', theme === 'dark');
       return { categories, sales, theme };
     });
@@ -163,10 +206,18 @@ const useStore = create((set, get) => ({
   resetData: async () => {
     const catalog = await fetchCatalog();
     const categories = mergeCatalogWithStock(catalog.categories, {});
-    const data = { stock: {}, sales: [], theme: 'light' };
-    saveToStorage(data);
+    const today = toDateKey();
+    saveToStorage({ stock: {}, sales: [], theme: 'light', lastActiveDate: today });
     document.documentElement.classList.toggle('dark', false);
-    set({ categories, sales: [], theme: 'light' });
+    set({
+      categories,
+      sales: [],
+      theme: 'light',
+      lastActiveDate: today,
+      showEndOfDayModal: false,
+      endOfDayDate: null,
+      endOfDaySummary: null,
+    });
   },
 }));
 

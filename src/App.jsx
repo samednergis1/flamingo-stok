@@ -6,7 +6,7 @@ import TabNav from './components/Layout/TabNav';
 import InventoryTab from './components/Inventory/InventoryTab';
 import POSTab from './components/POS/POSTab';
 import ReportsTab from './components/Reports/ReportsTab';
-import DataManagementTab from './components/DataManagement/DataManagementTab';
+import EndOfDayModal from './components/EndOfDay/EndOfDayModal';
 
 const TABS = {
   inventory: InventoryTab,
@@ -21,6 +21,10 @@ export default function App() {
   const activeTab = useStore((s) => s.activeTab);
   const initCatalog = useStore((s) => s.initCatalog);
   const initAuth = useStore((s) => s.initAuth);
+  const showEndOfDayModal = useStore((s) => s.showEndOfDayModal);
+  const endOfDayDate = useStore((s) => s.endOfDayDate);
+  const endOfDaySummary = useStore((s) => s.endOfDaySummary);
+  const dismissEndOfDay = useStore((s) => s.dismissEndOfDay);
   const ActiveComponent = TABS[activeTab];
 
   useEffect(() => {
@@ -52,6 +56,14 @@ export default function App() {
           <ActiveComponent />
         </div>
       </main>
+
+      {showEndOfDayModal && endOfDaySummary && endOfDayDate && (
+        <EndOfDayModal
+          dateKey={endOfDayDate}
+          summary={endOfDaySummary}
+          onDismiss={dismissEndOfDay}
+        />
+      )}
     </div>
   );
 }
