@@ -7,6 +7,7 @@ import {
   mergeCatalogWithStock,
   extractStock,
   migrateStockFromLegacy,
+  FALLBACK_CATALOG,
 } from '../utils/catalog';
 
 function persist(state) {
@@ -29,23 +30,28 @@ const useStore = create((set, get) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
 
   initCatalog: async () => {
-    const catalog = await fetchCatalog();
-    const stored = loadFromStorage();
+    try {
+      const catalog = await fetchCatalog();
+      const stored = loadFromStorage();
 
-    let stock = stored?.stock ?? {};
-    let sales = stored?.sales ?? [];
-    const theme = stored?.theme ?? 'light';
+      let stock = stored?.stock ?? {};
+      let sales = stored?.sales ?? [];
+      const theme = stored?.theme ?? 'light';
 
-    if (stored?.dataVersion !== DATA_VERSION && stored?.categories?.length) {
-      stock = migrateStockFromLegacy(stored.categories, catalog.categories);
-      sales = stored.sales ?? [];
+      if (stored?.dataVersion !== DATA_VERSION && stored?.categories?.length) {
+        stock = migrateStockFromLegacy(stored.categories, catalog.categories);
+        sales = stored.sales ?? [];
+      }
+
+      const categories = mergeCatalogWithStock(catalog.categories, stock);
+
+      saveToStorage({ stock, sales, theme });
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      set({ categories, sales, theme, catalogLoaded: true });
+    } catch {
+      const categories = mergeCatalogWithStock(FALLBACK_CATALOG.categories, {});
+      set({ categories, sales: [], theme: 'light', catalogLoaded: true });
     }
-
-    const categories = mergeCatalogWithStock(catalog.categories, stock);
-
-    saveToStorage({ stock, sales, theme });
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    set({ categories, sales, theme, catalogLoaded: true });
   },
 
   login: (password, username = '') => {
