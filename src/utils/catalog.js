@@ -88,6 +88,24 @@ export const FALLBACK_CATALOG = {
         { id: 'trio-findik', name: 'Fındık' },
       ],
     },
+    {
+      id: 'bigjoy-bar',
+      name: 'BigJoy Bar',
+      variations: [
+        { id: 'bigjoy-brownie', name: 'Brownie' },
+        { id: 'bigjoy-oreo', name: 'Oreo' },
+      ],
+    },
+    {
+      id: 'icecekler',
+      name: 'İçecekler',
+      variations: [
+        { id: 'icecek-espresso', name: 'Espresso' },
+        { id: 'icecek-americano', name: 'Americano' },
+        { id: 'icecek-latte', name: 'Latte' },
+        { id: 'icecek-portakal-suyu', name: 'Portakal Suyu' },
+      ],
+    },
   ],
 };
 

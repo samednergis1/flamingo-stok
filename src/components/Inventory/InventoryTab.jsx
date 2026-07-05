@@ -22,10 +22,6 @@ export default function InventoryTab() {
         </div>
       </div>
 
-      <div className="card border-flamingo-200/80 bg-flamingo-50/40 text-sm text-gray-600 dark:border-flamingo-900/50 dark:bg-flamingo-950/20 dark:text-gray-300">
-        Ürün kategorileri sabittir — tüm cihazlarda aynı listeyi görürsünüz. Sadece stok miktarlarını güncelleyebilirsiniz.
-      </div>
-
       <div className="space-y-3">
         {categories.map((category) => (
           <CategoryCard
