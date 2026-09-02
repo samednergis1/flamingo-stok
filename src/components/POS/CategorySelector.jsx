@@ -1,20 +1,17 @@
 import { getActiveCategories } from '../../utils/catalog';
+import { POS_TILE_GRID, posTileButtonClass } from './posTiles';
 
 export default function CategorySelector({ categories, selectedId, onSelect }) {
   const activeCategories = getActiveCategories(categories);
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className={POS_TILE_GRID}>
       {activeCategories.map((cat) => (
         <button
           key={cat.id}
           type="button"
           onClick={() => onSelect(cat.id)}
-          className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-95 ${
-            selectedId === cat.id
-              ? 'filter-btn-active shadow-md'
-              : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-zinc-200 dark:ring-white/10 dark:hover:bg-slate-700'
-          }`}
+          className={posTileButtonClass(selectedId === cat.id)}
         >
           {cat.name}
         </button>

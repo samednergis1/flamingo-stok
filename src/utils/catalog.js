@@ -397,15 +397,33 @@ const LEGACY_STOCK_ID_MAP = {
   'icecek-portakal-suyu': 'icecek-portakal-suyu-standart',
 };
 
+const RESTORED_STOCK_ID_MAP = {
+  'icecek-espresso-standart': 'icecek-espresso',
+  'icecek-americano-standart': 'icecek-americano',
+  'icecek-latte-standart': 'icecek-latte',
+  'icecek-portakal-suyu-standart': 'icecek-portakal-suyu',
+};
+
 export function migrateStockMap(stock = {}, fromVersion = 0) {
-  if (fromVersion >= 6) return stock;
   const next = { ...stock };
-  for (const [oldId, newId] of Object.entries(LEGACY_STOCK_ID_MAP)) {
-    if (Object.prototype.hasOwnProperty.call(next, oldId) && !Object.prototype.hasOwnProperty.call(next, newId)) {
-      next[newId] = next[oldId];
-      delete next[oldId];
+
+  if (fromVersion < 6) {
+    for (const [oldId, newId] of Object.entries(LEGACY_STOCK_ID_MAP)) {
+      if (Object.prototype.hasOwnProperty.call(next, oldId) && !Object.prototype.hasOwnProperty.call(next, newId)) {
+        next[newId] = next[oldId];
+        delete next[oldId];
+      }
     }
   }
+
+  if (fromVersion < 7) {
+    for (const [temporaryId, restoredId] of Object.entries(RESTORED_STOCK_ID_MAP)) {
+      if (!Object.prototype.hasOwnProperty.call(next, temporaryId)) continue;
+      next[restoredId] = (next[restoredId] ?? 0) + next[temporaryId];
+      delete next[temporaryId];
+    }
+  }
+
   return next;
 }
 
