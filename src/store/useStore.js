@@ -12,6 +12,7 @@ import {
   extractVariationMeta,
   extractProductMeta,
   migrateStockFromLegacy,
+  migrateStockMap,
   migrateCustomCategoriesLegacy,
   findVariation,
   findProduct,
@@ -152,6 +153,8 @@ const useStore = create((set, get) => ({
         sales = stored.sales ?? [];
         ikrams = stored.ikrams ?? [];
         ikramRecipients = stored.ikramRecipients ?? [];
+      } else if (stored?.dataVersion !== DATA_VERSION && stored?.stock) {
+        stock = migrateStockMap(stored.stock, stored.dataVersion ?? 0);
       }
 
       sales = (sales || []).map((s) => ({ status: 'completed', ...s }));
@@ -587,7 +590,7 @@ const useStore = create((set, get) => ({
   importData: async (data) => {
     const catalog = await fetchCatalog();
     cachedCatalog = catalog;
-    const stock = data.stock ?? {};
+    const stock = migrateStockMap(data.stock ?? {}, data.dataVersion ?? 0);
     const sales = (Array.isArray(data.sales) ? data.sales : []).map((s) => ({
       status: 'completed',
       ...s,

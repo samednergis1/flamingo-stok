@@ -1,109 +1,250 @@
 {
   "categories": [
     {
-      "id": "pankek",
-      "name": "Pankek",
-      "variations": [
-        { "id": "pankek-antep-fistikli", "name": "Antep Fıstıklı" },
-        { "id": "pankek-blueberry", "name": "Blueberry" },
-        { "id": "pankek-vanilya", "name": "Vanilya" },
-        { "id": "pankek-red-velvet", "name": "Red Velvet" },
-        { "id": "pankek-double-ciko", "name": "Double Çiko" },
-        { "id": "pankek-ciko", "name": "Çiko" },
-        { "id": "pankek-cilekli", "name": "Çilekli" },
-        { "id": "pankek-cookies-cream", "name": "Cookies Cream" },
-        { "id": "pankek-lotus", "name": "Lotus" },
-        { "id": "pankek-karamel", "name": "Karamel" }
+      "id": "doyurucu-lezzetler",
+      "name": "Doyurucu Lezzetler",
+      "products": [
+        {
+          "id": "fit-tabak",
+          "name": "Fit Tabak",
+          "varieties": [
+            { "id": "fit-tabak-granola-cup", "name": "Granola Cup" }
+          ]
+        },
+        {
+          "id": "proteinli-tabak",
+          "name": "Proteinli Tabak",
+          "varieties": [
+            { "id": "proteinli-tabak-standart", "name": "Proteinli Tabak" }
+          ]
+        }
       ]
     },
     {
-      "id": "waffle",
-      "name": "Waffle",
-      "variations": [
-        { "id": "waffle-visne", "name": "Vişne" },
-        { "id": "waffle-cikolata", "name": "Çikolata" },
-        { "id": "waffle-tiramisu", "name": "Tiramisu" },
-        { "id": "waffle-findik", "name": "Fındık" }
+      "id": "protein-smoothie",
+      "name": "Protein Smoothie",
+      "products": [
+        {
+          "id": "smoothie-cikolatali",
+          "name": "Çikolatalı Smoothie",
+          "varieties": [{ "id": "smoothie-cikolatali-standart", "name": "Çikolatalı Smoothie" }]
+        },
+        {
+          "id": "smoothie-muzlu",
+          "name": "Muzlu Smoothie",
+          "varieties": [{ "id": "smoothie-muzlu-standart", "name": "Muzlu Smoothie" }]
+        },
+        {
+          "id": "smoothie-biskuvili",
+          "name": "Bisküvili Smoothie",
+          "varieties": [{ "id": "smoothie-biskuvili-standart", "name": "Bisküvili Smoothie" }]
+        },
+        {
+          "id": "smoothie-cilekli",
+          "name": "Çilekli Smoothie",
+          "varieties": [{ "id": "smoothie-cilekli-standart", "name": "Çilekli Smoothie" }]
+        },
+        {
+          "id": "smoothie-antep-fistikli",
+          "name": "Antep Fıstıklı Smoothie",
+          "varieties": [{ "id": "smoothie-antep-fistikli-standart", "name": "Antep Fıstıklı Smoothie" }]
+        },
+        {
+          "id": "smoothie-muhallebili",
+          "name": "Muhallebili Smoothie",
+          "varieties": [{ "id": "smoothie-muhallebili-standart", "name": "Muhallebili Smoothie" }]
+        },
+        {
+          "id": "smoothie-lotuslu",
+          "name": "Lotuslu Smoothie",
+          "varieties": [{ "id": "smoothie-lotuslu-standart", "name": "Lotuslu Smoothie" }]
+        },
+        {
+          "id": "smoothie-kahveli",
+          "name": "Kahveli Smoothie",
+          "varieties": [{ "id": "smoothie-kahveli-standart", "name": "Kahveli Smoothie" }]
+        },
+        {
+          "id": "smoothie-blue-sky",
+          "name": "Blue Sky Smoothie",
+          "varieties": [{ "id": "smoothie-blue-sky-standart", "name": "Blue Sky Smoothie" }]
+        },
+        {
+          "id": "smoothie-vanilyali-kola",
+          "name": "Vanilyalı Kola Smoothie",
+          "varieties": [{ "id": "smoothie-vanilyali-kola-standart", "name": "Vanilyalı Kola Smoothie" }]
+        }
       ]
     },
     {
-      "id": "multipower-bar",
-      "name": "Multipower Bar",
-      "variations": [
-        { "id": "mp-layer-yer-fistigi-karamelli", "name": "Layer Yer Fıstıklı Karamelli" },
-        { "id": "mp-beyaz-cikolata-cilek", "name": "Beyaz Çikolata Çilek" },
-        { "id": "mp-50-bar", "name": "%50 Bar" },
-        { "id": "mp-xxl-bar", "name": "XXL Bar" }
+      "id": "supplement",
+      "name": "Supplement",
+      "products": [
+        {
+          "id": "sup-pre-shot",
+          "name": "Pre Shot",
+          "varieties": [{ "id": "sup-pre-shot-standart", "name": "Pre Shot" }]
+        },
+        {
+          "id": "sup-pre-toz",
+          "name": "Pre Toz",
+          "varieties": [{ "id": "sup-pre-toz-standart", "name": "Pre Toz" }]
+        },
+        {
+          "id": "sup-l-carnitine-shot",
+          "name": "L-Carnitine Shot",
+          "varieties": [{ "id": "sup-l-carnitine-shot-standart", "name": "L-Carnitine Shot" }]
+        },
+        {
+          "id": "sup-tek-servis-protein",
+          "name": "Tek Servis Protein Tozu",
+          "varieties": [{ "id": "sup-tek-servis-protein-standart", "name": "Tek Servis Protein Tozu" }]
+        },
+        {
+          "id": "sup-tek-servis-gainer",
+          "name": "Tek Servis Gainer",
+          "varieties": [{ "id": "sup-tek-servis-gainer-standart", "name": "Tek Servis Gainer" }]
+        },
+        {
+          "id": "sup-bcaa",
+          "name": "BCAA",
+          "varieties": [{ "id": "sup-bcaa-standart", "name": "BCAA" }]
+        },
+        {
+          "id": "sup-arjinin",
+          "name": "Arjinin",
+          "varieties": [{ "id": "sup-arjinin-standart", "name": "Arjinin" }]
+        },
+        {
+          "id": "sup-kreatin",
+          "name": "Kreatin",
+          "varieties": [{ "id": "sup-kreatin-standart", "name": "Kreatin" }]
+        },
+        {
+          "id": "sup-glutamin",
+          "name": "Glutamin",
+          "varieties": [{ "id": "sup-glutamin-standart", "name": "Glutamin" }]
+        },
+        {
+          "id": "sup-kolajen",
+          "name": "Kolajen",
+          "varieties": [{ "id": "sup-kolajen-standart", "name": "Kolajen" }]
+        }
       ]
     },
     {
-      "id": "grenade-bar",
-      "name": "Grenade Bar",
-      "variations": [
-        { "id": "grenade-fudged-up-cikolatali", "name": "Fudged Up Çikolatalı" },
-        { "id": "grenade-salted-karamel", "name": "Salted Karamel" },
-        { "id": "grenade-birthday-cake", "name": "Birthday Cake" },
-        { "id": "grenade-beyaz-cikolatali-cookie", "name": "Beyaz Çikolatalı Cookie" }
-      ]
-    },
-    {
-      "id": "snck-bar",
-      "name": "SNCK Bar",
-      "variations": [
-        { "id": "snck-karamel", "name": "Karamel" },
-        { "id": "snck-cikolata", "name": "Çikolata" }
-      ]
-    },
-    {
-      "id": "clean-powders-bar",
-      "name": "Clean Powders Bar",
-      "variations": [
-        { "id": "cp-cikolata-karamel", "name": "Çikolata Karamel" },
-        { "id": "cp-beyaz-cikolata-kurabiye", "name": "Beyaz Çikolata Kurabiye" },
-        { "id": "cp-cikolata", "name": "Çikolata" }
-      ]
-    },
-    {
-      "id": "protein-ocean-bar",
-      "name": "Protein Ocean Bar",
-      "variations": [
-        { "id": "po-tiramisu", "name": "Tiramisu" },
-        { "id": "po-oreo", "name": "Oreo" },
-        { "id": "po-coconut", "name": "Coconut" },
-        { "id": "po-cikolata", "name": "Çikolata" },
-        { "id": "po-birthday-cake", "name": "Birthday Cake" },
-        { "id": "po-strawberry-cheesecake", "name": "Strawberry Cheesecake" },
-        { "id": "po-choco-nut", "name": "Choco Nut" },
-        { "id": "po-salted-karamel", "name": "Salted Karamel" }
-      ]
-    },
-    {
-      "id": "trio-move-bar",
-      "name": "Trio Move Bar",
-      "variations": [
-        { "id": "trio-cilek", "name": "Çilek" },
-        { "id": "trio-biskuvi", "name": "Bisküvi" },
-        { "id": "trio-muz", "name": "Muz" },
-        { "id": "trio-mango", "name": "Mango" },
-        { "id": "trio-findik", "name": "Fındık" }
-      ]
-    },
-    {
-      "id": "bigjoy-bar",
-      "name": "BigJoy Bar",
-      "variations": [
-        { "id": "bigjoy-brownie", "name": "Brownie" },
-        { "id": "bigjoy-oreo", "name": "Oreo" }
+      "id": "kisisel-bakim-hijyen",
+      "name": "Kişisel Bakım & Hijyen",
+      "products": [
+        {
+          "id": "kb-sampuan",
+          "name": "Şampuan",
+          "varieties": [{ "id": "kb-sampuan-standart", "name": "Şampuan" }]
+        },
+        {
+          "id": "kb-kucuk-sampuan",
+          "name": "Küçük Şampuan",
+          "varieties": [{ "id": "kb-kucuk-sampuan-standart", "name": "Küçük Şampuan" }]
+        },
+        {
+          "id": "kb-tek-kullanim-havlu",
+          "name": "Tek Kullanımlık Havlu",
+          "varieties": [{ "id": "kb-tek-kullanim-havlu-standart", "name": "Tek Kullanımlık Havlu" }]
+        },
+        {
+          "id": "kb-blade-deo",
+          "name": "Blade Deo",
+          "varieties": [{ "id": "kb-blade-deo-standart", "name": "Blade Deo" }]
+        },
+        {
+          "id": "kb-rexona-axe-deo",
+          "name": "Rexona - Axe Deo",
+          "varieties": [{ "id": "kb-rexona-axe-deo-standart", "name": "Rexona - Axe Deo" }]
+        }
       ]
     },
     {
       "id": "icecekler",
       "name": "İçecekler",
-      "variations": [
-        { "id": "icecek-espresso", "name": "Espresso" },
-        { "id": "icecek-americano", "name": "Americano" },
-        { "id": "icecek-latte", "name": "Latte" },
-        { "id": "icecek-portakal-suyu", "name": "Portakal Suyu" }
+      "products": [
+        {
+          "id": "icecek-turk-kahvesi",
+          "name": "Türk Kahvesi",
+          "group": "Klasik Kahveler",
+          "varieties": [{ "id": "icecek-turk-kahvesi-standart", "name": "Türk Kahvesi" }]
+        },
+        {
+          "id": "icecek-double-turk-kahvesi",
+          "name": "Double Türk Kahvesi",
+          "group": "Klasik Kahveler",
+          "varieties": [{ "id": "icecek-double-turk-kahvesi-standart", "name": "Double Türk Kahvesi" }]
+        },
+        {
+          "id": "icecek-espresso",
+          "name": "Espresso",
+          "group": "Klasik Kahveler",
+          "varieties": [{ "id": "icecek-espresso-standart", "name": "Espresso" }]
+        },
+        {
+          "id": "icecek-double-espresso",
+          "name": "Double Espresso",
+          "group": "Klasik Kahveler",
+          "varieties": [{ "id": "icecek-double-espresso-standart", "name": "Double Espresso" }]
+        },
+        {
+          "id": "icecek-americano",
+          "name": "Americano",
+          "group": "Klasik Kahveler",
+          "varieties": [{ "id": "icecek-americano-standart", "name": "Americano" }]
+        },
+        {
+          "id": "icecek-latte",
+          "name": "Latte",
+          "group": "Klasik Kahveler",
+          "varieties": [{ "id": "icecek-latte-standart", "name": "Latte" }]
+        },
+        {
+          "id": "icecek-ice-americano",
+          "name": "Ice Americano",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-ice-americano-standart", "name": "Ice Americano" }]
+        },
+        {
+          "id": "icecek-ice-latte",
+          "name": "Ice Latte",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-ice-latte-standart", "name": "Ice Latte" }]
+        },
+        {
+          "id": "icecek-churchill",
+          "name": "Churchill",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-churchill-standart", "name": "Churchill" }]
+        },
+        {
+          "id": "icecek-sade-soda",
+          "name": "Sade Soda",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-sade-soda-standart", "name": "Sade Soda" }]
+        },
+        {
+          "id": "icecek-su-05",
+          "name": "0.5 Su",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-su-05-standart", "name": "0.5 Su" }]
+        },
+        {
+          "id": "icecek-su-15",
+          "name": "1.5 Su",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-su-15-standart", "name": "1.5 Su" }]
+        },
+        {
+          "id": "icecek-portakal-suyu",
+          "name": "Portakal Suyu",
+          "group": "Soğuk İçecekler",
+          "varieties": [{ "id": "icecek-portakal-suyu-standart", "name": "Portakal Suyu" }]
+        }
       ]
     }
   ]

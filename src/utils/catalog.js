@@ -1,113 +1,6 @@
-export const FALLBACK_CATALOG = {
-  categories: [
-    {
-      id: 'pankek',
-      name: 'Pankek',
-      variations: [
-        { id: 'pankek-antep-fistikli', name: 'Antep Fıstıklı' },
-        { id: 'pankek-blueberry', name: 'Blueberry' },
-        { id: 'pankek-vanilya', name: 'Vanilya' },
-        { id: 'pankek-red-velvet', name: 'Red Velvet' },
-        { id: 'pankek-double-ciko', name: 'Double Çiko' },
-        { id: 'pankek-ciko', name: 'Çiko' },
-        { id: 'pankek-cilekli', name: 'Çilekli' },
-        { id: 'pankek-cookies-cream', name: 'Cookies Cream' },
-        { id: 'pankek-lotus', name: 'Lotus' },
-        { id: 'pankek-karamel', name: 'Karamel' },
-      ],
-    },
-    {
-      id: 'waffle',
-      name: 'Waffle',
-      variations: [
-        { id: 'waffle-visne', name: 'Vişne' },
-        { id: 'waffle-cikolata', name: 'Çikolata' },
-        { id: 'waffle-tiramisu', name: 'Tiramisu' },
-        { id: 'waffle-findik', name: 'Fındık' },
-      ],
-    },
-    {
-      id: 'multipower-bar',
-      name: 'Multipower Bar',
-      variations: [
-        { id: 'mp-layer-yer-fistigi-karamelli', name: 'Layer Yer Fıstıklı Karamelli' },
-        { id: 'mp-beyaz-cikolata-cilek', name: 'Beyaz Çikolata Çilek' },
-        { id: 'mp-50-bar', name: '%50 Bar' },
-        { id: 'mp-xxl-bar', name: 'XXL Bar' },
-      ],
-    },
-    {
-      id: 'grenade-bar',
-      name: 'Grenade Bar',
-      variations: [
-        { id: 'grenade-fudged-up-cikolatali', name: 'Fudged Up Çikolatalı' },
-        { id: 'grenade-salted-karamel', name: 'Salted Karamel' },
-        { id: 'grenade-birthday-cake', name: 'Birthday Cake' },
-        { id: 'grenade-beyaz-cikolatali-cookie', name: 'Beyaz Çikolatalı Cookie' },
-      ],
-    },
-    {
-      id: 'snck-bar',
-      name: 'SNCK Bar',
-      variations: [
-        { id: 'snck-karamel', name: 'Karamel' },
-        { id: 'snck-cikolata', name: 'Çikolata' },
-      ],
-    },
-    {
-      id: 'clean-powders-bar',
-      name: 'Clean Powders Bar',
-      variations: [
-        { id: 'cp-cikolata-karamel', name: 'Çikolata Karamel' },
-        { id: 'cp-beyaz-cikolata-kurabiye', name: 'Beyaz Çikolata Kurabiye' },
-        { id: 'cp-cikolata', name: 'Çikolata' },
-      ],
-    },
-    {
-      id: 'protein-ocean-bar',
-      name: 'Protein Ocean Bar',
-      variations: [
-        { id: 'po-tiramisu', name: 'Tiramisu' },
-        { id: 'po-oreo', name: 'Oreo' },
-        { id: 'po-coconut', name: 'Coconut' },
-        { id: 'po-cikolata', name: 'Çikolata' },
-        { id: 'po-birthday-cake', name: 'Birthday Cake' },
-        { id: 'po-strawberry-cheesecake', name: 'Strawberry Cheesecake' },
-        { id: 'po-choco-nut', name: 'Choco Nut' },
-        { id: 'po-salted-karamel', name: 'Salted Karamel' },
-      ],
-    },
-    {
-      id: 'trio-move-bar',
-      name: 'Trio Move Bar',
-      variations: [
-        { id: 'trio-cilek', name: 'Çilek' },
-        { id: 'trio-biskuvi', name: 'Bisküvi' },
-        { id: 'trio-muz', name: 'Muz' },
-        { id: 'trio-mango', name: 'Mango' },
-        { id: 'trio-findik', name: 'Fındık' },
-      ],
-    },
-    {
-      id: 'bigjoy-bar',
-      name: 'BigJoy Bar',
-      variations: [
-        { id: 'bigjoy-brownie', name: 'Brownie' },
-        { id: 'bigjoy-oreo', name: 'Oreo' },
-      ],
-    },
-    {
-      id: 'icecekler',
-      name: 'İçecekler',
-      variations: [
-        { id: 'icecek-espresso', name: 'Espresso' },
-        { id: 'icecek-americano', name: 'Americano' },
-        { id: 'icecek-latte', name: 'Latte' },
-        { id: 'icecek-portakal-suyu', name: 'Portakal Suyu' },
-      ],
-    },
-  ],
-};
+import catalogSeed from '../../public/catalog.json';
+
+export const FALLBACK_CATALOG = catalogSeed;
 
 export function mainProductId(categoryId) {
   return `${categoryId}-main`;
@@ -184,6 +77,7 @@ function buildProduct(
   return {
     id: productDef.id,
     name: meta.name ?? productDef.name,
+    group: meta.group ?? productDef.group ?? null,
     active: meta.active !== false && productDef.active !== false,
     custom: productDef.custom === true,
     varieties: buildVariationsForProduct(
@@ -246,7 +140,6 @@ export function buildCategories(
   productMeta = {}
 ) {
   const catalogMerged = catalogCategories.map((cat) => {
-    const mainId = mainProductId(cat.id);
     const extraProducts = (customProducts || [])
       .filter((p) => p.categoryId === cat.id)
       .map((p) =>
@@ -260,6 +153,28 @@ export function buildCategories(
         )
       );
 
+    if (cat.products?.length) {
+      const catalogProducts = cat.products.map((p) =>
+        buildProduct(
+          { ...p, varieties: p.varieties || p.variations || [] },
+          cat.id,
+          stockMap,
+          variationMeta,
+          customVariations,
+          productMeta
+        )
+      );
+
+      return {
+        id: cat.id,
+        name: cat.name,
+        custom: false,
+        active: true,
+        products: [...catalogProducts, ...extraProducts],
+      };
+    }
+
+    const mainId = mainProductId(cat.id);
     const mainProduct = buildProduct(
       {
         id: mainId,
@@ -368,19 +283,26 @@ export function extractCustomVariations(categories) {
 export function extractVariationMeta(catalogCategories, categories) {
   const catalogNames = new Map();
   for (const cat of catalogCategories) {
-    for (const v of cat.variations) {
-      catalogNames.set(v.id, v.name);
+    if (cat.products?.length) {
+      for (const product of cat.products) {
+        for (const v of product.varieties || product.variations || []) {
+          catalogNames.set(v.id, v.name);
+        }
+      }
+    } else {
+      for (const v of cat.variations || []) {
+        catalogNames.set(v.id, v.name);
+      }
     }
   }
 
   const meta = {};
   for (const cat of categories) {
     if (cat.custom) continue;
-    const mainId = mainProductId(cat.id);
     for (const product of cat.products || []) {
-      if (product.id !== mainId && !product.custom) continue;
+      if (product.custom) continue;
       for (const v of product.varieties || []) {
-        if (v.custom) continue;
+        if (v.custom || !catalogNames.has(v.id)) continue;
         const originalName = catalogNames.get(v.id);
         const entry = {};
         if (originalName && v.name !== originalName) entry.name = v.name;
@@ -399,10 +321,11 @@ export function extractProductMeta(categories) {
   for (const cat of categories) {
     if (cat.custom) continue;
     for (const product of cat.products || []) {
-      if (product.id === mainProductId(cat.id)) continue;
+      if (!product.custom) continue;
       meta[product.id] = {
         name: product.name,
         active: product.active !== false,
+        ...(product.group ? { group: product.group } : {}),
       };
     }
   }
@@ -457,20 +380,74 @@ export function getVariationLabel(item) {
   return item.variationName;
 }
 
+export function getProductGroups(products) {
+  const groups = [...new Set((products || []).map((p) => p.group).filter(Boolean))];
+  return groups.length ? groups : null;
+}
+
+export function filterProductsByGroup(products, group) {
+  if (!group) return products || [];
+  return (products || []).filter((p) => p.group === group);
+}
+
+const LEGACY_STOCK_ID_MAP = {
+  'icecek-espresso': 'icecek-espresso-standart',
+  'icecek-americano': 'icecek-americano-standart',
+  'icecek-latte': 'icecek-latte-standart',
+  'icecek-portakal-suyu': 'icecek-portakal-suyu-standart',
+};
+
+export function migrateStockMap(stock = {}, fromVersion = 0) {
+  if (fromVersion >= 6) return stock;
+  const next = { ...stock };
+  for (const [oldId, newId] of Object.entries(LEGACY_STOCK_ID_MAP)) {
+    if (Object.prototype.hasOwnProperty.call(next, oldId) && !Object.prototype.hasOwnProperty.call(next, newId)) {
+      next[newId] = next[oldId];
+      delete next[oldId];
+    }
+  }
+  return next;
+}
+
+function indexCatalogVariations(catalogCategories, idByName) {
+  for (const cat of catalogCategories) {
+    if (cat.products?.length) {
+      for (const product of cat.products) {
+        for (const v of product.varieties || product.variations || []) {
+          idByName.set(`${cat.name}::${product.name}::${v.name}`, v.id);
+          idByName.set(`${cat.name}::${v.name}`, v.id);
+        }
+      }
+    } else {
+      for (const v of cat.variations || []) {
+        idByName.set(`${cat.name}::${v.name}`, v.id);
+      }
+    }
+  }
+}
+
 export function migrateStockFromLegacy(legacyCategories, catalogCategories) {
   const stock = {};
   const idByName = new Map();
 
-  for (const cat of catalogCategories) {
-    for (const v of cat.variations) {
-      idByName.set(`${cat.name}::${v.name}`, v.id);
-    }
-  }
+  indexCatalogVariations(catalogCategories, idByName);
 
   for (const cat of legacyCategories || []) {
-    for (const v of cat.variations || []) {
-      const mappedId = idByName.get(`${cat.name}::${v.name}`);
-      if (mappedId) stock[mappedId] = v.stock;
+    if (cat.products?.length) {
+      for (const product of cat.products) {
+        for (const v of product.varieties || product.variations || []) {
+          const mappedId =
+            idByName.get(`${cat.name}::${product.name}::${v.name}`) ||
+            idByName.get(`${cat.name}::${v.name}`) ||
+            LEGACY_STOCK_ID_MAP[v.id];
+          if (mappedId) stock[mappedId] = v.stock;
+        }
+      }
+    } else {
+      for (const v of cat.variations || []) {
+        const mappedId = idByName.get(`${cat.name}::${v.name}`) || LEGACY_STOCK_ID_MAP[v.id];
+        if (mappedId) stock[mappedId] = v.stock;
+      }
     }
   }
 

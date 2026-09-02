@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import useStore from '../../store/useStore';
-import { getActiveCategories } from '../../utils/catalog';
+import { getActiveCategories, getProductGroups, filterProductsByGroup } from '../../utils/catalog';
 import CategorySelector from './CategorySelector';
 import ProductSelector from './ProductSelector';
 import VariationGrid from './VariationGrid';
@@ -15,19 +15,37 @@ export default function POSTab() {
   const activeCategories = useMemo(() => getActiveCategories(categories), [categories]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(activeCategories[0]?.id ?? null);
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [cart, setCart] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successTotal, setSuccessTotal] = useState(null);
 
   const selectedCategory = activeCategories.find((c) => c.id === selectedCategoryId);
   const products = selectedCategory?.products || [];
-  const effectiveProductId = selectedProductId || products[0]?.id || null;
-  const selectedProduct = products.find((p) => p.id === effectiveProductId);
+  const productGroups = useMemo(() => getProductGroups(products), [products]);
+  const visibleProducts = useMemo(
+    () => filterProductsByGroup(products, selectedGroup),
+    [products, selectedGroup]
+  );
+  const effectiveProductId = selectedProductId || visibleProducts[0]?.id || null;
+  const selectedProduct = visibleProducts.find((p) => p.id === effectiveProductId);
+
+  useEffect(() => {
+    const groups = getProductGroups(products);
+    const nextGroup = groups?.[0] ?? null;
+    setSelectedGroup(nextGroup);
+    const visible = filterProductsByGroup(products, nextGroup);
+    setSelectedProductId(visible[0]?.id ?? null);
+  }, [selectedCategoryId, products]);
 
   const handleCategorySelect = (id) => {
     setSelectedCategoryId(id);
-    const cat = activeCategories.find((c) => c.id === id);
-    setSelectedProductId(cat?.products[0]?.id ?? null);
+  };
+
+  const handleGroupSelect = (group) => {
+    setSelectedGroup(group);
+    const visible = filterProductsByGroup(products, group);
+    setSelectedProductId(visible[0]?.id ?? null);
   };
 
   const addToCart = (variety, qty = 1) => {
@@ -123,7 +141,10 @@ export default function POSTab() {
 
         {selectedCategory && (
           <ProductSelector
-            products={products}
+            products={visibleProducts}
+            groups={productGroups}
+            selectedGroup={selectedGroup}
+            onGroupSelect={handleGroupSelect}
             selectedId={effectiveProductId}
             onSelect={setSelectedProductId}
           />

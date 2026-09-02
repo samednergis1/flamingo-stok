@@ -78,6 +78,11 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <h4 className="font-semibold dark:text-zinc-100">{product.name}</h4>
+                    {product.group && (
+                      <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-400">
+                        {product.group}
+                      </span>
+                    )}
                     {product.active === false && (
                       <span className="text-[10px] font-semibold uppercase text-gray-400">Pasif</span>
                     )}
