@@ -347,20 +347,29 @@ export function findProduct(categories, categoryId, productId) {
   return category?.products?.find((p) => p.id === productId) ?? null;
 }
 
-export function getActiveCategories(categories) {
-  return categories
-    .filter((c) => c.active !== false)
-    .map((c) => ({
-      ...c,
-      products: (c.products || [])
-        .filter((p) => p.active !== false)
-        .map((p) => ({
-          ...p,
-          varieties: (p.varieties || []).filter((v) => v.active !== false),
-        }))
-        .filter((p) => p.varieties.length > 0),
+export function getSellableProducts(category) {
+  return (category?.products || [])
+    .filter((p) => p.active !== false)
+    .map((p) => ({
+      ...p,
+      varieties: (p.varieties || []).filter((v) => v.active !== false),
     }))
-    .filter((c) => c.products.length > 0);
+    .filter((p) => p.varieties.length > 0);
+}
+
+export function getPosCategories(categories) {
+  return (categories || []).filter((c) => {
+    if (c.active === false) return false;
+    if (c.custom) return true;
+    return getSellableProducts(c).length > 0;
+  });
+}
+
+export function getActiveCategories(categories) {
+  return getPosCategories(categories).map((c) => ({
+    ...c,
+    products: getSellableProducts(c),
+  }));
 }
 
 export function countCategoryStock(category) {

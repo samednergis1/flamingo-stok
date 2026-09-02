@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import useStore from '../../store/useStore';
-import { getActiveCategories, getProductGroups, filterProductsByGroup } from '../../utils/catalog';
+import { getPosCategories, getSellableProducts, getProductGroups, filterProductsByGroup } from '../../utils/catalog';
 import CategorySelector from './CategorySelector';
 import ProductSelector from './ProductSelector';
 import VariationGrid from './VariationGrid';
@@ -12,16 +12,19 @@ export default function POSTab() {
   const categories = useStore((s) => s.categories);
   const completeSale = useStore((s) => s.completeSale);
 
-  const activeCategories = useMemo(() => getActiveCategories(categories), [categories]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(activeCategories[0]?.id ?? null);
+  const posCategories = useMemo(() => getPosCategories(categories), [categories]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(posCategories[0]?.id ?? null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [cart, setCart] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successTotal, setSuccessTotal] = useState(null);
 
-  const selectedCategory = activeCategories.find((c) => c.id === selectedCategoryId);
-  const products = selectedCategory?.products || [];
+  const selectedCategory = posCategories.find((c) => c.id === selectedCategoryId);
+  const products = useMemo(
+    () => (selectedCategory ? getSellableProducts(selectedCategory) : []),
+    [selectedCategory]
+  );
   const productGroups = useMemo(() => getProductGroups(products), [products]);
   const visibleProducts = useMemo(
     () => filterProductsByGroup(products, selectedGroup),
@@ -29,6 +32,16 @@ export default function POSTab() {
   );
   const effectiveProductId = selectedProductId || visibleProducts[0]?.id || null;
   const selectedProduct = visibleProducts.find((p) => p.id === effectiveProductId);
+
+  useEffect(() => {
+    if (posCategories.length === 0) {
+      setSelectedCategoryId(null);
+      return;
+    }
+    if (!posCategories.some((c) => c.id === selectedCategoryId)) {
+      setSelectedCategoryId(posCategories[0].id);
+    }
+  }, [posCategories, selectedCategoryId]);
 
   useEffect(() => {
     const groups = getProductGroups(products);
@@ -139,7 +152,13 @@ export default function POSTab() {
           onSelect={handleCategorySelect}
         />
 
-        {selectedCategory && (
+        {selectedCategory && visibleProducts.length === 0 && (
+          <div className="card py-8 text-center text-gray-400">
+            Bu kategoride henüz ürün bulunmuyor
+          </div>
+        )}
+
+        {selectedCategory && visibleProducts.length > 0 && (
           <ProductSelector
             products={visibleProducts}
             groups={productGroups}
@@ -150,7 +169,7 @@ export default function POSTab() {
           />
         )}
 
-        {selectedProduct && (
+        {selectedProduct && visibleProducts.length > 0 && (
           <VariationGrid product={selectedProduct} onAdd={addToCart} />
         )}
 
