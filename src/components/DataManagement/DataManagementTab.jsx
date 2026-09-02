@@ -20,6 +20,7 @@ export default function DataManagementTab() {
   const categories = useStore((s) => s.categories);
   const sales = useStore((s) => s.sales);
   const ikrams = useStore((s) => s.ikrams);
+  const ikramRecipients = useStore((s) => s.ikramRecipients);
   const theme = useStore((s) => s.theme);
   const importData = useStore((s) => s.importData);
   const resetData = useStore((s) => s.resetData);
@@ -43,6 +44,7 @@ export default function DataManagementTab() {
       stock: extractStock(categories),
       sales,
       ikrams,
+      ikramRecipients,
       customCategories: extractCustomCategories(categories),
       customProducts: extractCustomProducts(categories),
       customVariations: extractCustomVariations(categories),

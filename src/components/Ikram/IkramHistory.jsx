@@ -27,6 +27,10 @@ export default function IkramHistory() {
                     {formatDateTime(ikram.timestamp)} · {total} adet
                   </p>
                   <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-zinc-400">
+                    {ikram.recipient ? (
+                      <span className="font-medium text-amber-700 dark:text-amber-400">{ikram.recipient}</span>
+                    ) : null}
+                    {ikram.recipient ? ' · ' : ''}
                     {ikram.items
                       .map((i) =>
                         i.productName

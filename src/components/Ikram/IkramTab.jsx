@@ -10,12 +10,14 @@ import IkramHistory from './IkramHistory';
 
 export default function IkramTab() {
   const categories = useStore((s) => s.categories);
+  const ikramRecipients = useStore((s) => s.ikramRecipients);
   const completeIkram = useStore((s) => s.completeIkram);
 
   const activeCategories = useMemo(() => getActiveCategories(categories), [categories]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(activeCategories[0]?.id ?? null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [cart, setCart] = useState([]);
+  const [recipient, setRecipient] = useState('');
   const [note, setNote] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [successTotal, setSuccessTotal] = useState(null);
@@ -92,7 +94,7 @@ export default function IkramTab() {
 
   const handleCompleteIkram = () => {
     const total = cart.reduce((s, item) => s + item.quantity, 0);
-    const result = completeIkram(cart, note);
+    const result = completeIkram(cart, { recipient, note });
     if (result.success) {
       setCart([]);
       setNote('');
@@ -111,7 +113,7 @@ export default function IkramTab() {
         <div>
           <h2 className="text-xl font-bold">Misafir İkramı</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kategori Seç → Ürün Seç → Çeşit Ekle → İkramı Tamamla (ücretsiz)
+            Kategori Seç → Ürün Seç → Çeşit Ekle → Kişi & Not → İkramı Tamamla
           </p>
         </div>
 
@@ -138,6 +140,9 @@ export default function IkramTab() {
         <IkramCart
           items={cart}
           total={cartTotal}
+          recipient={recipient}
+          recipients={ikramRecipients}
+          onRecipientChange={setRecipient}
           note={note}
           onNoteChange={setNote}
           onUpdateQty={updateCartQty}

@@ -14,6 +14,7 @@ export default function IkramDetailModal({ ikram, onClose }) {
         </div>
 
         <dl className="space-y-3 text-sm">
+          <DetailRow label="Kişi" value={ikram.recipient?.trim() || 'Belirtilmedi'} />
           <DetailRow label="Tarih" value={date.toLocaleDateString('tr-TR')} />
           <DetailRow label="Saat" value={date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} />
           <DetailRow label="Personel" value={ikram.username || 'Belirtilmedi'} />

@@ -14,9 +14,11 @@ import {
   computeIkramCost,
   formatMoney,
 } from '../../utils/exportImport';
+import { analyzeIkramByRecipient } from '../../utils/ikramReports';
 import TimeFilter from './TimeFilter';
 import CategoryChart from './CategoryChart';
 import VariationAnalysis from './VariationAnalysis';
+import IkramRecipientReport from './IkramRecipientReport';
 
 export default function ReportsTab() {
   const sales = useStore((s) => s.sales);
@@ -48,6 +50,10 @@ export default function ReportsTab() {
   const ikramCost = useMemo(
     () => computeIkramCost(filteredIkrams, categories),
     [filteredIkrams, categories]
+  );
+  const ikramRecipientReport = useMemo(
+    () => analyzeIkramByRecipient(filteredIkrams),
+    [filteredIkrams]
   );
 
   const periodLabel = useMemo(
@@ -117,11 +123,12 @@ export default function ReportsTab() {
         onSelectedDayChange={setSelectedDay}
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard label="Satış Adedi" value={salesAnalytics.totalItems} icon="🛍" />
         <StatCard label="Satış Geliri" value={formatMoney(salesRevenue)} icon="💰" />
         <StatCard label="İkram Adedi" value={ikramAnalytics.totalItems} icon="🎁" />
-        <StatCard label="İkram Maliyeti" value={formatMoney(ikramCost)} icon="📉" />
+        <StatCard label="İkram Kişisi" value={ikramRecipientReport.uniquePeople} icon="👤" />
+        <StatCard label="İkram Maliyeti" value={formatMoney(ikramCost)} icon="📉" className="col-span-2 sm:col-span-1" />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -162,14 +169,24 @@ export default function ReportsTab() {
           )}
 
           {(reportView === 'overview' || reportView === 'ikrams') && (
-            <ReportSection
-              title="İkram Raporu"
-              subtitle={`${ikramAnalytics.ikramCount} işlem · ${formatMoney(ikramCost)} maliyet · gelire dahil değil`}
-              emptyMessage={`${periodLabel} için ikram verisi yok`}
-              hasData={hasIkrams}
-              analytics={ikramAnalytics}
-              accent="amber"
-            />
+            <>
+              <ReportSection
+                title="İkram Raporu"
+                subtitle={`${ikramAnalytics.ikramCount} işlem · ${formatMoney(ikramCost)} maliyet · gelire dahil değil`}
+                emptyMessage={`${periodLabel} için ikram verisi yok`}
+                hasData={hasIkrams}
+                analytics={ikramAnalytics}
+                accent="amber"
+              />
+              {hasIkrams && (
+                <IkramRecipientReport
+                  data={ikramRecipientReport}
+                  periodLabel={periodLabel}
+                  ikramCost={ikramCost}
+                  formatMoney={formatMoney}
+                />
+              )}
+            </>
           )}
         </>
       )}

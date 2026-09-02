@@ -1,4 +1,15 @@
-export default function IkramCart({ items, total, note, onNoteChange, onUpdateQty, onClear, onComplete }) {
+export default function IkramCart({
+  items,
+  total,
+  recipient,
+  recipients,
+  onRecipientChange,
+  note,
+  onNoteChange,
+  onUpdateQty,
+  onClear,
+  onComplete,
+}) {
   return (
     <div className="card border-amber-200 bg-white/95 backdrop-blur dark:border-amber-500/20 dark:bg-slate-900/95">
       <div className="mb-3 flex items-center justify-between">
@@ -56,13 +67,50 @@ export default function IkramCart({ items, total, note, onNoteChange, onUpdateQt
 
       <div className="mb-3">
         <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-zinc-400">
+          Kime Verildi? <span className="text-amber-600 dark:text-amber-400">*</span>
+        </label>
+        <input
+          type="text"
+          list="ikram-recipient-list"
+          value={recipient}
+          onChange={(e) => onRecipientChange(e.target.value)}
+          placeholder="Kişi adı yazın veya listeden seçin"
+          className="input-field"
+        />
+        <datalist id="ikram-recipient-list">
+          {recipients.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+        {recipients.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {recipients.slice(0, 8).map((name) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => onRecipientChange(name)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+                  recipient === name
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-800 dark:text-zinc-300 dark:hover:bg-slate-700'
+                }`}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mb-3">
+        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-zinc-400">
           Not / Açıklama (opsiyonel)
         </label>
         <input
           type="text"
           value={note}
           onChange={(e) => onNoteChange(e.target.value)}
-          placeholder="Örn: Ahmet'e doğum günü ikramı"
+          placeholder="Örn: Doğum günü ikramı"
           className="input-field"
         />
       </div>
@@ -70,7 +118,7 @@ export default function IkramCart({ items, total, note, onNoteChange, onUpdateQt
       <button
         type="button"
         onClick={onComplete}
-        disabled={items.length === 0}
+        disabled={items.length === 0 || !recipient.trim()}
         className="w-full rounded-xl bg-amber-500 px-4 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-[0.97] disabled:opacity-50 dark:bg-amber-500/90 dark:hover:bg-amber-500"
       >
         🎁 İkramı Tamamla ({total} ürün — ücretsiz)

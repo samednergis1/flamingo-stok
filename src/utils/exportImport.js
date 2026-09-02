@@ -31,13 +31,14 @@ export function exportSalesAsCsv(sales) {
 }
 
 export function exportIkramsAsCsv(ikrams) {
-  const headers = ['Tarih', 'Kategori', 'Ürün', 'Çeşit', 'Adet', 'Not', 'Personel'];
+  const headers = ['Tarih', 'Kişi', 'Kategori', 'Ürün', 'Çeşit', 'Adet', 'Not', 'Personel'];
   const rows = [];
 
   for (const ikram of ikrams) {
     for (const item of ikram.items) {
       rows.push([
         new Date(ikram.timestamp).toLocaleString('tr-TR'),
+        ikram.recipient || '',
         item.categoryName,
         item.productName || item.categoryName,
         item.variationName,
@@ -102,6 +103,7 @@ function normalizeImport(data) {
     stock: data.stock ?? {},
     sales: Array.isArray(data.sales) ? data.sales : [],
     ikrams: Array.isArray(data.ikrams) ? data.ikrams : [],
+    ikramRecipients: Array.isArray(data.ikramRecipients) ? data.ikramRecipients : [],
     customCategories: Array.isArray(data.customCategories) ? data.customCategories : [],
     customProducts: Array.isArray(data.customProducts) ? data.customProducts : [],
     customVariations: Array.isArray(data.customVariations) ? data.customVariations : [],

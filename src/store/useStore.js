@@ -19,6 +19,7 @@ import {
   parseMoney,
   FALLBACK_CATALOG,
 } from '../utils/catalog';
+import { buildIkramRecipientsFromHistory } from '../utils/ikramReports';
 
 let cachedCatalog = null;
 
@@ -27,6 +28,7 @@ function persist(state) {
     stock: extractStock(state.categories),
     sales: state.sales,
     ikrams: state.ikrams,
+    ikramRecipients: state.ikramRecipients ?? [],
     customCategories: extractCustomCategories(state.categories),
     customProducts: extractCustomProducts(state.categories),
     customVariations: extractCustomVariations(state.categories),
@@ -117,6 +119,7 @@ const useStore = create((set, get) => ({
   categories: [],
   sales: [],
   ikrams: [],
+  ikramRecipients: [],
   theme: 'light',
   catalogLoaded: false,
   _variationMeta: {},
@@ -136,6 +139,7 @@ const useStore = create((set, get) => ({
       let stock = stored?.stock ?? {};
       let sales = stored?.sales ?? [];
       let ikrams = stored?.ikrams ?? [];
+      let ikramRecipients = stored?.ikramRecipients ?? [];
       let customCategories = migrateCustomCategoriesLegacy(stored?.customCategories ?? []);
       let customProducts = stored?.customProducts ?? [];
       let customVariations = stored?.customVariations ?? [];
@@ -147,9 +151,11 @@ const useStore = create((set, get) => ({
         stock = migrateStockFromLegacy(stored.categories, catalog.categories);
         sales = stored.sales ?? [];
         ikrams = stored.ikrams ?? [];
+        ikramRecipients = stored.ikramRecipients ?? [];
       }
 
       sales = (sales || []).map((s) => ({ status: 'completed', ...s }));
+      ikramRecipients = buildIkramRecipientsFromHistory(ikrams, ikramRecipients);
 
       const categories = buildCategories(
         catalog.categories,
@@ -165,6 +171,7 @@ const useStore = create((set, get) => ({
         stock,
         sales,
         ikrams,
+        ikramRecipients,
         customCategories,
         customProducts,
         customVariations,
@@ -177,6 +184,7 @@ const useStore = create((set, get) => ({
         categories,
         sales,
         ikrams,
+        ikramRecipients,
         theme,
         _variationMeta: variationMeta,
         _productMeta: productMeta,
@@ -189,6 +197,7 @@ const useStore = create((set, get) => ({
         categories,
         sales: [],
         ikrams: [],
+        ikramRecipients: [],
         theme: 'light',
         catalogLoaded: true,
       });
@@ -529,8 +538,13 @@ const useStore = create((set, get) => ({
     return { success: true };
   },
 
-  completeIkram: (cartItems, note = '') => {
+  completeIkram: (cartItems, { recipient = '', note = '' } = {}) => {
     if (!cartItems.length) return { success: false, message: 'Sepet boş' };
+
+    const trimmedRecipient = recipient.trim();
+    if (!trimmedRecipient) {
+      return { success: false, message: 'Kime verildiği belirtilmeli' };
+    }
 
     const state = get();
     const stockCheck = validateCartStock(state.categories, cartItems);
@@ -539,6 +553,7 @@ const useStore = create((set, get) => ({
     const ikram = {
       id: generateId(),
       timestamp: new Date().toISOString(),
+      recipient: trimmedRecipient,
       note: note.trim(),
       username: state.username,
       items: cartItems.map((item) => {
@@ -559,8 +574,11 @@ const useStore = create((set, get) => ({
     set((current) => {
       const categories = deductStockFromCategories(current.categories, cartItems);
       const ikrams = [...current.ikrams, ikram];
-      persist({ ...current, categories, ikrams });
-      return { categories, ikrams };
+      const ikramRecipients = [...new Set([trimmedRecipient, ...current.ikramRecipients])].sort(
+        (a, b) => a.localeCompare(b, 'tr')
+      );
+      persist({ ...current, categories, ikrams, ikramRecipients });
+      return { categories, ikrams, ikramRecipients };
     });
 
     return { success: true };
@@ -575,6 +593,8 @@ const useStore = create((set, get) => ({
       ...s,
     }));
     const ikrams = Array.isArray(data.ikrams) ? data.ikrams : [];
+    let ikramRecipients = Array.isArray(data.ikramRecipients) ? data.ikramRecipients : [];
+    ikramRecipients = buildIkramRecipientsFromHistory(ikrams, ikramRecipients);
     const customCategories = migrateCustomCategoriesLegacy(data.customCategories ?? []);
     const customProducts = data.customProducts ?? [];
     const customVariations = data.customVariations ?? [];
@@ -599,12 +619,21 @@ const useStore = create((set, get) => ({
         categories,
         sales,
         ikrams,
+        ikramRecipients,
         _variationMeta: variationMeta,
         _productMeta: productMeta,
         theme,
       });
       document.documentElement.classList.toggle('dark', theme === 'dark');
-      return { categories, sales, ikrams, _variationMeta: variationMeta, _productMeta: productMeta, theme };
+      return {
+        categories,
+        sales,
+        ikrams,
+        ikramRecipients,
+        _variationMeta: variationMeta,
+        _productMeta: productMeta,
+        theme,
+      };
     });
   },
 
@@ -616,6 +645,7 @@ const useStore = create((set, get) => ({
       stock: {},
       sales: [],
       ikrams: [],
+      ikramRecipients: [],
       customCategories: [],
       customProducts: [],
       customVariations: [],
@@ -628,6 +658,7 @@ const useStore = create((set, get) => ({
       categories,
       sales: [],
       ikrams: [],
+      ikramRecipients: [],
       _variationMeta: {},
       _productMeta: {},
       theme: 'light',
