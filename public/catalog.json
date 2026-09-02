@@ -248,97 +248,97 @@
     {
       "id": "pankek",
       "name": "Pankek",
-      "variations": [
-        { "id": "pankek-antep-fistikli", "name": "Antep Fıstıklı" },
-        { "id": "pankek-blueberry", "name": "Blueberry" },
-        { "id": "pankek-vanilya", "name": "Vanilya" },
-        { "id": "pankek-red-velvet", "name": "Red Velvet" },
-        { "id": "pankek-double-ciko", "name": "Double Çiko" },
-        { "id": "pankek-ciko", "name": "Çiko" },
-        { "id": "pankek-cilekli", "name": "Çilekli" },
-        { "id": "pankek-cookies-cream", "name": "Cookies Cream" },
-        { "id": "pankek-lotus", "name": "Lotus" },
-        { "id": "pankek-karamel", "name": "Karamel" }
+      "products": [
+        { "id": "pankek-antep-fistikli", "name": "Antep Fıstıklı", "varieties": [{ "id": "pankek-antep-fistikli", "name": "Antep Fıstıklı" }] },
+        { "id": "pankek-blueberry", "name": "Blueberry", "varieties": [{ "id": "pankek-blueberry", "name": "Blueberry" }] },
+        { "id": "pankek-vanilya", "name": "Vanilya", "varieties": [{ "id": "pankek-vanilya", "name": "Vanilya" }] },
+        { "id": "pankek-red-velvet", "name": "Red Velvet", "varieties": [{ "id": "pankek-red-velvet", "name": "Red Velvet" }] },
+        { "id": "pankek-double-ciko", "name": "Double Çiko", "varieties": [{ "id": "pankek-double-ciko", "name": "Double Çiko" }] },
+        { "id": "pankek-ciko", "name": "Çiko", "varieties": [{ "id": "pankek-ciko", "name": "Çiko" }] },
+        { "id": "pankek-cilekli", "name": "Çilekli", "varieties": [{ "id": "pankek-cilekli", "name": "Çilekli" }] },
+        { "id": "pankek-cookies-cream", "name": "Cookies Cream", "varieties": [{ "id": "pankek-cookies-cream", "name": "Cookies Cream" }] },
+        { "id": "pankek-lotus", "name": "Lotus", "varieties": [{ "id": "pankek-lotus", "name": "Lotus" }] },
+        { "id": "pankek-karamel", "name": "Karamel", "varieties": [{ "id": "pankek-karamel", "name": "Karamel" }] }
       ]
     },
     {
       "id": "waffle",
       "name": "Waffle",
-      "variations": [
-        { "id": "waffle-visne", "name": "Vişne" },
-        { "id": "waffle-cikolata", "name": "Çikolata" },
-        { "id": "waffle-tiramisu", "name": "Tiramisu" },
-        { "id": "waffle-findik", "name": "Fındık" }
+      "products": [
+        { "id": "waffle-visne", "name": "Vişne", "varieties": [{ "id": "waffle-visne", "name": "Vişne" }] },
+        { "id": "waffle-cikolata", "name": "Çikolata", "varieties": [{ "id": "waffle-cikolata", "name": "Çikolata" }] },
+        { "id": "waffle-tiramisu", "name": "Tiramisu", "varieties": [{ "id": "waffle-tiramisu", "name": "Tiramisu" }] },
+        { "id": "waffle-findik", "name": "Fındık", "varieties": [{ "id": "waffle-findik", "name": "Fındık" }] }
       ]
     },
     {
       "id": "multipower-bar",
       "name": "Multipower Bar",
-      "variations": [
-        { "id": "mp-layer-yer-fistigi-karamelli", "name": "Layer Yer Fıstıklı Karamelli" },
-        { "id": "mp-beyaz-cikolata-cilek", "name": "Beyaz Çikolata Çilek" },
-        { "id": "mp-50-bar", "name": "%50 Bar" },
-        { "id": "mp-xxl-bar", "name": "XXL Bar" }
+      "products": [
+        { "id": "mp-layer-yer-fistigi-karamelli", "name": "Layer Yer Fıstıklı Karamelli", "varieties": [{ "id": "mp-layer-yer-fistigi-karamelli", "name": "Layer Yer Fıstıklı Karamelli" }] },
+        { "id": "mp-beyaz-cikolata-cilek", "name": "Beyaz Çikolata Çilek", "varieties": [{ "id": "mp-beyaz-cikolata-cilek", "name": "Beyaz Çikolata Çilek" }] },
+        { "id": "mp-50-bar", "name": "%50 Bar", "varieties": [{ "id": "mp-50-bar", "name": "%50 Bar" }] },
+        { "id": "mp-xxl-bar", "name": "XXL Bar", "varieties": [{ "id": "mp-xxl-bar", "name": "XXL Bar" }] }
       ]
     },
     {
       "id": "grenade-bar",
       "name": "Grenade Bar",
-      "variations": [
-        { "id": "grenade-fudged-up-cikolatali", "name": "Fudged Up Çikolatalı" },
-        { "id": "grenade-salted-karamel", "name": "Salted Karamel" },
-        { "id": "grenade-birthday-cake", "name": "Birthday Cake" },
-        { "id": "grenade-beyaz-cikolatali-cookie", "name": "Beyaz Çikolatalı Cookie" }
+      "products": [
+        { "id": "grenade-fudged-up-cikolatali", "name": "Fudged Up Çikolatalı", "varieties": [{ "id": "grenade-fudged-up-cikolatali", "name": "Fudged Up Çikolatalı" }] },
+        { "id": "grenade-salted-karamel", "name": "Salted Karamel", "varieties": [{ "id": "grenade-salted-karamel", "name": "Salted Karamel" }] },
+        { "id": "grenade-birthday-cake", "name": "Birthday Cake", "varieties": [{ "id": "grenade-birthday-cake", "name": "Birthday Cake" }] },
+        { "id": "grenade-beyaz-cikolatali-cookie", "name": "Beyaz Çikolatalı Cookie", "varieties": [{ "id": "grenade-beyaz-cikolatali-cookie", "name": "Beyaz Çikolatalı Cookie" }] }
       ]
     },
     {
       "id": "snck-bar",
       "name": "SNCK Bar",
-      "variations": [
-        { "id": "snck-karamel", "name": "Karamel" },
-        { "id": "snck-cikolata", "name": "Çikolata" }
+      "products": [
+        { "id": "snck-karamel", "name": "Karamel", "varieties": [{ "id": "snck-karamel", "name": "Karamel" }] },
+        { "id": "snck-cikolata", "name": "Çikolata", "varieties": [{ "id": "snck-cikolata", "name": "Çikolata" }] }
       ]
     },
     {
       "id": "clean-powders-bar",
       "name": "Clean Powders Bar",
-      "variations": [
-        { "id": "cp-cikolata-karamel", "name": "Çikolata Karamel" },
-        { "id": "cp-beyaz-cikolata-kurabiye", "name": "Beyaz Çikolata Kurabiye" },
-        { "id": "cp-cikolata", "name": "Çikolata" }
+      "products": [
+        { "id": "cp-cikolata-karamel", "name": "Çikolata Karamel", "varieties": [{ "id": "cp-cikolata-karamel", "name": "Çikolata Karamel" }] },
+        { "id": "cp-beyaz-cikolata-kurabiye", "name": "Beyaz Çikolata Kurabiye", "varieties": [{ "id": "cp-beyaz-cikolata-kurabiye", "name": "Beyaz Çikolata Kurabiye" }] },
+        { "id": "cp-cikolata", "name": "Çikolata", "varieties": [{ "id": "cp-cikolata", "name": "Çikolata" }] }
       ]
     },
     {
       "id": "protein-ocean-bar",
       "name": "Protein Ocean Bar",
-      "variations": [
-        { "id": "po-tiramisu", "name": "Tiramisu" },
-        { "id": "po-oreo", "name": "Oreo" },
-        { "id": "po-coconut", "name": "Coconut" },
-        { "id": "po-cikolata", "name": "Çikolata" },
-        { "id": "po-birthday-cake", "name": "Birthday Cake" },
-        { "id": "po-strawberry-cheesecake", "name": "Strawberry Cheesecake" },
-        { "id": "po-choco-nut", "name": "Choco Nut" },
-        { "id": "po-salted-karamel", "name": "Salted Karamel" }
+      "products": [
+        { "id": "po-tiramisu", "name": "Tiramisu", "varieties": [{ "id": "po-tiramisu", "name": "Tiramisu" }] },
+        { "id": "po-oreo", "name": "Oreo", "varieties": [{ "id": "po-oreo", "name": "Oreo" }] },
+        { "id": "po-coconut", "name": "Coconut", "varieties": [{ "id": "po-coconut", "name": "Coconut" }] },
+        { "id": "po-cikolata", "name": "Çikolata", "varieties": [{ "id": "po-cikolata", "name": "Çikolata" }] },
+        { "id": "po-birthday-cake", "name": "Birthday Cake", "varieties": [{ "id": "po-birthday-cake", "name": "Birthday Cake" }] },
+        { "id": "po-strawberry-cheesecake", "name": "Strawberry Cheesecake", "varieties": [{ "id": "po-strawberry-cheesecake", "name": "Strawberry Cheesecake" }] },
+        { "id": "po-choco-nut", "name": "Choco Nut", "varieties": [{ "id": "po-choco-nut", "name": "Choco Nut" }] },
+        { "id": "po-salted-karamel", "name": "Salted Karamel", "varieties": [{ "id": "po-salted-karamel", "name": "Salted Karamel" }] }
       ]
     },
     {
       "id": "trio-move-bar",
       "name": "Trio Move Bar",
-      "variations": [
-        { "id": "trio-cilek", "name": "Çilek" },
-        { "id": "trio-biskuvi", "name": "Bisküvi" },
-        { "id": "trio-muz", "name": "Muz" },
-        { "id": "trio-mango", "name": "Mango" },
-        { "id": "trio-findik", "name": "Fındık" }
+      "products": [
+        { "id": "trio-cilek", "name": "Çilek", "varieties": [{ "id": "trio-cilek", "name": "Çilek" }] },
+        { "id": "trio-biskuvi", "name": "Bisküvi", "varieties": [{ "id": "trio-biskuvi", "name": "Bisküvi" }] },
+        { "id": "trio-muz", "name": "Muz", "varieties": [{ "id": "trio-muz", "name": "Muz" }] },
+        { "id": "trio-mango", "name": "Mango", "varieties": [{ "id": "trio-mango", "name": "Mango" }] },
+        { "id": "trio-findik", "name": "Fındık", "varieties": [{ "id": "trio-findik", "name": "Fındık" }] }
       ]
     },
     {
       "id": "bigjoy-bar",
       "name": "BigJoy Bar",
-      "variations": [
-        { "id": "bigjoy-brownie", "name": "Brownie" },
-        { "id": "bigjoy-oreo", "name": "Oreo" }
+      "products": [
+        { "id": "bigjoy-brownie", "name": "Brownie", "varieties": [{ "id": "bigjoy-brownie", "name": "Brownie" }] },
+        { "id": "bigjoy-oreo", "name": "Oreo", "varieties": [{ "id": "bigjoy-oreo", "name": "Oreo" }] }
       ]
     }
   ]

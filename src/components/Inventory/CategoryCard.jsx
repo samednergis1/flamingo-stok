@@ -138,6 +138,7 @@ function MultiVarietyProductBlock({
   onDeleteVariety,
   onToggleProductActive,
   allowDelete,
+  allowAddVariety,
 }) {
   return (
     <div className="space-y-2">
@@ -163,9 +164,11 @@ function MultiVarietyProductBlock({
               {product.active === false ? 'Aktif' : 'Pasif'}
             </button>
           )}
-          <button type="button" onClick={onAddVariety} className="btn-secondary px-2.5 py-1 text-xs">
-            + Yeni Çeşit Ekle
-          </button>
+          {allowAddVariety && (
+            <button type="button" onClick={onAddVariety} className="btn-secondary px-2.5 py-1 text-xs">
+              + Yeni Çeşit Ekle
+            </button>
+          )}
         </div>
       </div>
 
@@ -244,6 +247,7 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
   };
 
   const allowDelete = category.custom === true;
+  const allowAddVariety = category.custom === true;
 
   const runDelete = () => {
     if (!confirmDelete) return;
@@ -337,6 +341,7 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
                       setProductActive(category.id, product.id, makeActive)
                     }
                     allowDelete={allowDelete}
+                    allowAddVariety={allowAddVariety}
                   />
                 ) : (
                   <SimpleProductRow

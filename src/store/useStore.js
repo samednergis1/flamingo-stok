@@ -14,6 +14,7 @@ import {
   applyCatalogRemovals,
   migrateStockFromLegacy,
   migrateStockMap,
+  migrateFlatCatalogTransactions,
   migrateCustomCategoriesLegacy,
   findVariation,
   findProduct,
@@ -166,6 +167,10 @@ const useStore = create((set, get) => ({
       } else if (stored?.dataVersion !== DATA_VERSION && stored?.stock) {
         stock = migrateStockMap(stored.stock, stored.dataVersion ?? 0);
       }
+
+      const storedVersion = stored?.dataVersion ?? 0;
+      sales = migrateFlatCatalogTransactions(sales, storedVersion);
+      ikrams = migrateFlatCatalogTransactions(ikrams, storedVersion);
 
       sales = (sales || []).map((s) => ({ status: 'completed', ...s }));
       ikramRecipients = buildIkramRecipientsFromHistory(ikrams, ikramRecipients);
@@ -693,11 +698,17 @@ const useStore = create((set, get) => ({
     const catalog = await fetchCatalog();
     cachedCatalog = catalog;
     const stock = migrateStockMap(data.stock ?? {}, data.dataVersion ?? 0);
-    const sales = (Array.isArray(data.sales) ? data.sales : []).map((s) => ({
-      status: 'completed',
-      ...s,
-    }));
-    const ikrams = Array.isArray(data.ikrams) ? data.ikrams : [];
+    let sales = migrateFlatCatalogTransactions(
+      (Array.isArray(data.sales) ? data.sales : []).map((s) => ({
+        status: 'completed',
+        ...s,
+      })),
+      data.dataVersion ?? 0
+    );
+    let ikrams = migrateFlatCatalogTransactions(
+      Array.isArray(data.ikrams) ? data.ikrams : [],
+      data.dataVersion ?? 0
+    );
     let ikramRecipients = Array.isArray(data.ikramRecipients) ? data.ikramRecipients : [];
     ikramRecipients = buildIkramRecipientsFromHistory(ikrams, ikramRecipients);
     const customCategories = migrateCustomCategoriesLegacy(data.customCategories ?? []);

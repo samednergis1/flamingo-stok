@@ -11,12 +11,31 @@ export async function fetchCatalog() {
     const res = await fetch('/catalog.json');
     if (res.ok) {
       const data = await res.json();
-      if (data?.categories?.length) return data;
+      if (data?.categories?.length) {
+        return { categories: normalizeCatalogCategories(data.categories) };
+      }
     }
   } catch {
     /* offline */
   }
-  return FALLBACK_CATALOG;
+  return { categories: normalizeCatalogCategories(FALLBACK_CATALOG.categories) };
+}
+
+export function normalizeCatalogCategories(categories) {
+  return (categories || []).map((cat) => {
+    if (cat.products?.length) return cat;
+    if (!cat.variations?.length) return cat;
+
+    return {
+      id: cat.id,
+      name: cat.name,
+      products: cat.variations.map((variation) => ({
+        id: variation.id,
+        name: variation.name,
+        varieties: [{ id: variation.id, name: variation.name }],
+      })),
+    };
+  });
 }
 
 export function parseMoney(value) {
@@ -139,7 +158,7 @@ export function buildCategories(
   customVariations = [],
   productMeta = {}
 ) {
-  const catalogMerged = catalogCategories.map((cat) => {
+  const catalogMerged = normalizeCatalogCategories(catalogCategories).map((cat) => {
     const extraProducts = (customProducts || [])
       .filter((p) => p.categoryId === cat.id)
       .map((p) =>
@@ -174,27 +193,12 @@ export function buildCategories(
       };
     }
 
-    const mainId = mainProductId(cat.id);
-    const mainProduct = buildProduct(
-      {
-        id: mainId,
-        name: cat.name,
-        custom: false,
-        varieties: cat.variations,
-      },
-      cat.id,
-      stockMap,
-      variationMeta,
-      customVariations,
-      productMeta
-    );
-
     return {
       id: cat.id,
       name: cat.name,
       custom: false,
       active: true,
-      products: [mainProduct, ...extraProducts],
+      products: [...extraProducts],
     };
   });
 
@@ -474,6 +478,26 @@ export function migrateStockMap(stock = {}, fromVersion = 0) {
   }
 
   return next;
+}
+
+function flattenLegacyMainProductItem(item) {
+  if (!item?.categoryId || !item?.variationId) return item;
+  if (item.productId !== mainProductId(item.categoryId)) return item;
+
+  return {
+    ...item,
+    productId: item.variationId,
+    productName: item.variationName ?? item.productName,
+  };
+}
+
+export function migrateFlatCatalogTransactions(records = [], fromVersion = 0) {
+  if (fromVersion >= 8) return records;
+
+  return (records || []).map((record) => ({
+    ...record,
+    items: (record.items || []).map(flattenLegacyMainProductItem),
+  }));
 }
 
 function indexCatalogVariations(catalogCategories, idByName) {
