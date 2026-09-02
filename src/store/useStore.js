@@ -12,6 +12,8 @@ import {
   extractVariationMeta,
   extractProductMeta,
   applyCatalogRemovals,
+  createCustomProduct,
+  ensureCustomProductVarieties,
   migrateStockFromLegacy,
   migrateStockMap,
   migrateFlatCatalogTransactions,
@@ -189,6 +191,11 @@ const useStore = create((set, get) => ({
         removedProducts: removedCatalogProducts,
         removedVariations: removedCatalogVariations,
       });
+      categories = ensureCustomProductVarieties(categories);
+      customCategories = extractCustomCategories(categories);
+      customProducts = extractCustomProducts(categories);
+      customVariations = extractCustomVariations(categories);
+      stock = { ...stock, ...extractStock(categories) };
 
       saveToStorage({
         stock,
@@ -303,15 +310,7 @@ const useStore = create((set, get) => ({
       name: trimmed,
       custom: true,
       active: true,
-      products: [
-        {
-          id: mainProductId(catId),
-          name: trimmed,
-          active: true,
-          custom: true,
-          varieties: [],
-        },
-      ],
+      products: [],
     };
 
     set((state) => {
@@ -323,30 +322,35 @@ const useStore = create((set, get) => ({
     return { success: true };
   },
 
-  addProduct: (categoryId, name) => {
-    const trimmed = name.trim();
+  addProduct: (categoryId, payload) => {
+    const input = typeof payload === 'string' ? { name: payload } : payload ?? {};
+    const trimmed = input.name?.trim();
     if (!trimmed) return { success: false, message: 'Ürün adı gerekli' };
 
     const category = get().categories.find((c) => c.id === categoryId);
     if (!category) return { success: false, message: 'Kategori bulunamadı' };
 
-    const newProduct = {
-      id: `custom-prod-${generateId()}`,
-      name: trimmed,
-      active: true,
-      custom: true,
-      varieties: [],
-    };
+    const exists = (category.products || []).some(
+      (p) => p.name.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (exists) return { success: false, message: 'Bu isimde ürün zaten var' };
+
+    const newProduct = createCustomProduct(trimmed, {
+      stock: input.stock ?? 0,
+      price: input.price,
+      cost: input.cost,
+      active: input.active !== false,
+    });
 
     set((state) => {
       const categories = state.categories.map((c) =>
-        c.id === categoryId ? { ...c, products: [...c.products, newProduct] } : c
+        c.id === categoryId ? { ...c, products: [...(c.products || []), newProduct] } : c
       );
       persist({ ...state, categories });
       return { categories };
     });
 
-    return { success: true };
+    return { success: true, message: 'Ürün eklendi' };
   },
 
   addVariety: (categoryId, productId, { name, stock, price, cost }) => {
@@ -742,6 +746,7 @@ const useStore = create((set, get) => ({
       removedProducts: removedCatalogProducts,
       removedVariations: removedCatalogVariations,
     });
+    categories = ensureCustomProductVarieties(categories);
 
     set((state) => {
       persist({

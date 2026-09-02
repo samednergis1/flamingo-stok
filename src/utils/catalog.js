@@ -1,4 +1,5 @@
 import catalogSeed from '../../public/catalog.json';
+import { generateId } from './mockData';
 
 export const FALLBACK_CATALOG = catalogSeed;
 
@@ -36,6 +37,49 @@ export function normalizeCatalogCategories(categories) {
       })),
     };
   });
+}
+
+export function createCustomVariety(name, { stock = 0, active = true, price = null, cost = null } = {}) {
+  const trimmed = String(name ?? '').trim();
+  const stockQty = parseInt(stock, 10);
+
+  return {
+    id: `custom-var-${generateId()}`,
+    name: trimmed,
+    stock: Number.isFinite(stockQty) && stockQty >= 0 ? stockQty : 0,
+    price: price ?? null,
+    cost: cost ?? null,
+    active: active !== false,
+    custom: true,
+  };
+}
+
+export function createCustomProduct(name, options = {}) {
+  const trimmed = String(name ?? '').trim();
+  const variety = createCustomVariety(trimmed, options);
+
+  return {
+    id: `custom-prod-${generateId()}`,
+    name: trimmed,
+    active: options.active !== false,
+    custom: true,
+    varieties: [variety],
+  };
+}
+
+export function ensureCustomProductVarieties(categories) {
+  return (categories || []).map((cat) => ({
+    ...cat,
+    products: (cat.products || []).map((product) => {
+      if ((product.varieties || []).length > 0) return product;
+      if (!product.custom && !cat.custom) return product;
+
+      return {
+        ...product,
+        varieties: [createCustomVariety(product.name, { active: product.active !== false })],
+      };
+    }),
+  }));
 }
 
 export function parseMoney(value) {

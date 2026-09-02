@@ -40,11 +40,12 @@ export function AddCategoryModal({ onClose, onConfirm }) {
 
 export function AddProductModal({ categoryName, onClose, onConfirm }) {
   const [name, setName] = useState('');
+  const [stock, setStock] = useState('0');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const result = onConfirm(name);
+    const result = onConfirm({ name, stock });
     if (result.success) onClose();
     else setError(result.message);
   };
@@ -53,6 +54,7 @@ export function AddProductModal({ categoryName, onClose, onConfirm }) {
     <ModalShell title={`Ürün Ekle — ${categoryName}`} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Ürün Adı" value={name} onChange={setName} placeholder="Örn: Grenade Bar" />
+        <Field label="Başlangıç Stoku" value={stock} onChange={setStock} type="number" min="0" />
         {error && <div className="toast-error">{error}</div>}
         <ModalActions onClose={onClose} submitLabel="Ekle" disabled={!name.trim()} />
       </form>

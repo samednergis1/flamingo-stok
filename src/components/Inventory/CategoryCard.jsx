@@ -62,27 +62,17 @@ function SimpleProductRow({
   allowDelete,
 }) {
   const variety = getPrimaryVariety(product);
-  if (!variety) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-slate-800/50">
-        <span className="text-sm font-medium dark:text-zinc-100">{product.name}</span>
-        {allowDelete && (
-          <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
-            Sil
-          </button>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div
       className={`flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:border dark:border-white/5 dark:bg-slate-800/50 ${
-        product.active === false || variety.active === false ? 'opacity-60' : ''
+        product.active === false || variety?.active === false ? 'opacity-60' : ''
       }`}
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className={`stock-badge ${stockBadgeClass(variety.stock)}`}>{variety.stock}</span>
+        <span className={`stock-badge ${stockBadgeClass(variety?.stock ?? 0)}`}>
+          {variety?.stock ?? 0}
+        </span>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium dark:text-zinc-100">{product.name}</span>
@@ -91,11 +81,11 @@ function SimpleProductRow({
                 {product.group}
               </span>
             )}
-            {(product.active === false || variety.active === false) && (
+            {(product.active === false || variety?.active === false) && (
               <span className="text-[10px] font-semibold uppercase text-gray-400">Pasif</span>
             )}
           </div>
-          {(variety.price != null || variety.cost != null) && (
+          {variety && (variety.price != null || variety.cost != null) && (
             <p className="text-xs text-gray-400">
               {variety.price != null && `Fiyat: ${formatMoney(variety.price)}`}
               {variety.price != null && variety.cost != null && ' · '}
@@ -114,16 +104,24 @@ function SimpleProductRow({
             {product.active === false ? 'Aktif' : 'Pasif'}
           </button>
         )}
-        <VarietyActions
-          category={category}
-          product={product}
-          variety={variety}
-          multiVariety={false}
-          onEdit={onEdit}
-          onAddStock={onAddStock}
-          onDelete={onDelete}
-          allowDelete={allowDelete}
-        />
+        {variety ? (
+          <VarietyActions
+            category={category}
+            product={product}
+            variety={variety}
+            multiVariety={false}
+            onEdit={onEdit}
+            onAddStock={onAddStock}
+            onDelete={onDelete}
+            allowDelete={allowDelete}
+          />
+        ) : (
+          allowDelete && (
+            <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
+              Sil
+            </button>
+          )
+        )}
       </div>
     </div>
   );
@@ -403,7 +401,11 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
         <AddProductModal
           categoryName={category.name}
           onClose={() => setAddProductOpen(false)}
-          onConfirm={(name) => addProduct(category.id, name)}
+          onConfirm={(data) => {
+            const result = addProduct(category.id, data);
+            notify(result);
+            return result;
+          }}
         />
       )}
 
