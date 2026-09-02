@@ -212,16 +212,32 @@ function ReadonlyField({ label, value }) {
   );
 }
 
-function ModalActions({ onClose, submitLabel, disabled }) {
+function ModalActions({ onClose, submitLabel, disabled, submitClassName = 'btn-primary' }) {
   return (
     <div className="flex gap-2 pt-1">
       <button type="button" onClick={onClose} className="btn-secondary flex-1">
         İptal
       </button>
-      <button type="submit" className="btn-primary flex-1" disabled={disabled}>
+      <button type="submit" className={`${submitClassName} flex-1`} disabled={disabled}>
         {submitLabel}
       </button>
     </div>
+  );
+}
+
+export function ConfirmDeleteModal({ title, message, onClose, onConfirm }) {
+  return (
+    <ModalShell title={title} onClose={onClose}>
+      <p className="text-sm leading-relaxed text-gray-600 dark:text-zinc-300">{message}</p>
+      <div className="mt-5 flex gap-2">
+        <button type="button" onClick={onClose} className="btn-secondary flex-1">
+          İptal
+        </button>
+        <button type="button" onClick={onConfirm} className="btn-danger flex-1">
+          Sil
+        </button>
+      </div>
+    </ModalShell>
   );
 }
 

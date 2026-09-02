@@ -21,6 +21,9 @@ export default function DataManagementTab() {
   const sales = useStore((s) => s.sales);
   const ikrams = useStore((s) => s.ikrams);
   const ikramRecipients = useStore((s) => s.ikramRecipients);
+  const removedCatalogCategories = useStore((s) => s.removedCatalogCategories);
+  const removedCatalogProducts = useStore((s) => s.removedCatalogProducts);
+  const removedCatalogVariations = useStore((s) => s.removedCatalogVariations);
   const theme = useStore((s) => s.theme);
   const importData = useStore((s) => s.importData);
   const resetData = useStore((s) => s.resetData);
@@ -50,6 +53,9 @@ export default function DataManagementTab() {
       customVariations: extractCustomVariations(categories),
       variationMeta: extractVariationMeta(catalog.categories, categories),
       productMeta: extractProductMeta(categories),
+      removedCatalogCategories,
+      removedCatalogProducts,
+      removedCatalogVariations,
       theme,
     });
     showMessage('success', 'JSON yedek indirildi ✓');
@@ -123,13 +129,10 @@ export default function DataManagementTab() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <SummaryItem label="Kategori" value={categories.length} />
           <SummaryItem
-            label="Çeşit"
-            value={categories.reduce(
-              (s, c) => s + (c.products || []).reduce((ps, p) => ps + (p.varieties || []).length, 0),
-              0
-            )}
+            label="Ürün"
+            value={categories.reduce((s, c) => s + (c.products || []).length, 0)}
           />
-          <SummaryItem label="Toplam Stok" value={totalStock} />
+          <SummaryItem label="Stok" value={totalStock} />
           <SummaryItem label="Satış Kaydı" value={sales.length} />
           <SummaryItem label="İkram Kaydı" value={ikrams.length} />
         </div>

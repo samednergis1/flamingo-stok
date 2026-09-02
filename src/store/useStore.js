@@ -11,6 +11,7 @@ import {
   extractCustomVariations,
   extractVariationMeta,
   extractProductMeta,
+  applyCatalogRemovals,
   migrateStockFromLegacy,
   migrateStockMap,
   migrateCustomCategoriesLegacy,
@@ -39,6 +40,9 @@ function persist(state) {
     productMeta: cachedCatalog
       ? extractProductMeta(state.categories)
       : state._productMeta ?? {},
+    removedCatalogCategories: state.removedCatalogCategories ?? [],
+    removedCatalogProducts: state.removedCatalogProducts ?? [],
+    removedCatalogVariations: state.removedCatalogVariations ?? [],
     theme: state.theme,
   });
 }
@@ -125,6 +129,9 @@ const useStore = create((set, get) => ({
   catalogLoaded: false,
   _variationMeta: {},
   _productMeta: {},
+  removedCatalogCategories: [],
+  removedCatalogProducts: [],
+  removedCatalogVariations: [],
   ...hydrateAuth(),
 
   activeTab: 'inventory',
@@ -146,6 +153,9 @@ const useStore = create((set, get) => ({
       let customVariations = stored?.customVariations ?? [];
       let variationMeta = stored?.variationMeta ?? {};
       let productMeta = stored?.productMeta ?? {};
+      let removedCatalogCategories = stored?.removedCatalogCategories ?? [];
+      let removedCatalogProducts = stored?.removedCatalogProducts ?? [];
+      let removedCatalogVariations = stored?.removedCatalogVariations ?? [];
       const theme = stored?.theme ?? 'light';
 
       if (stored?.dataVersion !== DATA_VERSION && stored?.categories?.length) {
@@ -160,7 +170,7 @@ const useStore = create((set, get) => ({
       sales = (sales || []).map((s) => ({ status: 'completed', ...s }));
       ikramRecipients = buildIkramRecipientsFromHistory(ikrams, ikramRecipients);
 
-      const categories = buildCategories(
+      let categories = buildCategories(
         catalog.categories,
         stock,
         customCategories,
@@ -169,6 +179,11 @@ const useStore = create((set, get) => ({
         customVariations,
         productMeta
       );
+      categories = applyCatalogRemovals(categories, {
+        removedCategories: removedCatalogCategories,
+        removedProducts: removedCatalogProducts,
+        removedVariations: removedCatalogVariations,
+      });
 
       saveToStorage({
         stock,
@@ -180,6 +195,9 @@ const useStore = create((set, get) => ({
         customVariations,
         variationMeta,
         productMeta,
+        removedCatalogCategories,
+        removedCatalogProducts,
+        removedCatalogVariations,
         theme,
       });
       document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -191,6 +209,9 @@ const useStore = create((set, get) => ({
         theme,
         _variationMeta: variationMeta,
         _productMeta: productMeta,
+        removedCatalogCategories,
+        removedCatalogProducts,
+        removedCatalogVariations,
         catalogLoaded: true,
       });
     } catch {
@@ -489,6 +510,102 @@ const useStore = create((set, get) => ({
     return { success: true };
   },
 
+  deleteCategory: (categoryId) => {
+    const category = get().categories.find((c) => c.id === categoryId);
+    if (!category) return { success: false, message: 'Kategori bulunamadı' };
+
+    set((state) => {
+      const removedCatalogCategories = category.custom
+        ? state.removedCatalogCategories
+        : [...new Set([...state.removedCatalogCategories, categoryId])];
+      const categories = state.categories.filter((c) => c.id !== categoryId);
+
+      persist({ ...state, categories, removedCatalogCategories });
+      return { categories, removedCatalogCategories };
+    });
+
+    return { success: true, message: 'Kategori başarıyla silindi' };
+  },
+
+  deleteProduct: (categoryId, productId) => {
+    const state = get();
+    const category = state.categories.find((c) => c.id === categoryId);
+    const product = category?.products.find((p) => p.id === productId);
+    if (!category || !product) return { success: false, message: 'Ürün bulunamadı' };
+
+    if (category.custom && product.id === mainProductId(categoryId)) {
+      return { success: false, message: 'Ana ürün silinemez. Kategoriyi silin.' };
+    }
+
+    const varietyIds = (product.varieties || []).map((v) => v.id);
+
+    set((current) => {
+      const removedCatalogProducts = product.custom
+        ? current.removedCatalogProducts
+        : [...new Set([...current.removedCatalogProducts, productId])];
+      const removedCatalogVariations = product.custom
+        ? current.removedCatalogVariations
+        : [...new Set([...current.removedCatalogVariations, ...varietyIds])];
+
+      const categories = current.categories
+        .map((c) =>
+          c.id === categoryId
+            ? { ...c, products: c.products.filter((p) => p.id !== productId) }
+            : c
+        )
+        .filter((c) => c.products.length > 0);
+
+      persist({
+        ...current,
+        categories,
+        removedCatalogProducts,
+        removedCatalogVariations,
+      });
+      return { categories, removedCatalogProducts, removedCatalogVariations };
+    });
+
+    return { success: true, message: 'Ürün başarıyla silindi' };
+  },
+
+  deleteVariety: (categoryId, productId, varietyId) => {
+    const state = get();
+    const category = state.categories.find((c) => c.id === categoryId);
+    const product = category?.products.find((p) => p.id === productId);
+    const variety = product?.varieties.find((v) => v.id === varietyId);
+    if (!category || !product || !variety) {
+      return { success: false, message: 'Çeşit bulunamadı' };
+    }
+
+    set((current) => {
+      const removedCatalogVariations = variety.custom
+        ? current.removedCatalogVariations
+        : [...new Set([...current.removedCatalogVariations, varietyId])];
+
+      const categories = current.categories
+        .map((c) => {
+          if (c.id !== categoryId) return c;
+          return {
+            ...c,
+            products: c.products
+              .map((p) => {
+                if (p.id !== productId) return p;
+                return {
+                  ...p,
+                  varieties: p.varieties.filter((v) => v.id !== varietyId),
+                };
+              })
+              .filter((p) => p.varieties.length > 0),
+          };
+        })
+        .filter((c) => c.products.length > 0);
+
+      persist({ ...current, categories, removedCatalogVariations });
+      return { categories, removedCatalogVariations };
+    });
+
+    return { success: true, message: 'Çeşit başarıyla silindi' };
+  },
+
   completeSale: (cartItems) => {
     if (!cartItems.length) return { success: false, message: 'Sepet boş' };
 
@@ -605,8 +722,17 @@ const useStore = create((set, get) => ({
       data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {};
     const productMeta =
       data.productMeta && typeof data.productMeta === 'object' ? data.productMeta : {};
+    const removedCatalogCategories = Array.isArray(data.removedCatalogCategories)
+      ? data.removedCatalogCategories
+      : [];
+    const removedCatalogProducts = Array.isArray(data.removedCatalogProducts)
+      ? data.removedCatalogProducts
+      : [];
+    const removedCatalogVariations = Array.isArray(data.removedCatalogVariations)
+      ? data.removedCatalogVariations
+      : [];
     const theme = data.theme === 'dark' ? 'dark' : 'light';
-    const categories = buildCategories(
+    let categories = buildCategories(
       catalog.categories,
       stock,
       customCategories,
@@ -615,6 +741,11 @@ const useStore = create((set, get) => ({
       customVariations,
       productMeta
     );
+    categories = applyCatalogRemovals(categories, {
+      removedCategories: removedCatalogCategories,
+      removedProducts: removedCatalogProducts,
+      removedVariations: removedCatalogVariations,
+    });
 
     set((state) => {
       persist({
@@ -625,6 +756,9 @@ const useStore = create((set, get) => ({
         ikramRecipients,
         _variationMeta: variationMeta,
         _productMeta: productMeta,
+        removedCatalogCategories,
+        removedCatalogProducts,
+        removedCatalogVariations,
         theme,
       });
       document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -635,6 +769,9 @@ const useStore = create((set, get) => ({
         ikramRecipients,
         _variationMeta: variationMeta,
         _productMeta: productMeta,
+        removedCatalogCategories,
+        removedCatalogProducts,
+        removedCatalogVariations,
         theme,
       };
     });
@@ -654,6 +791,9 @@ const useStore = create((set, get) => ({
       customVariations: [],
       variationMeta: {},
       productMeta: {},
+      removedCatalogCategories: [],
+      removedCatalogProducts: [],
+      removedCatalogVariations: [],
       theme: 'light',
     });
     document.documentElement.classList.toggle('dark', false);
@@ -664,6 +804,9 @@ const useStore = create((set, get) => ({
       ikramRecipients: [],
       _variationMeta: {},
       _productMeta: {},
+      removedCatalogCategories: [],
+      removedCatalogProducts: [],
+      removedCatalogVariations: [],
       theme: 'light',
     });
   },

@@ -370,6 +370,55 @@ export function countCategoryVarieties(category) {
   return (category.products || []).reduce((sum, p) => sum + (p.varieties || []).length, 0);
 }
 
+function normalizeCatalogName(value) {
+  return String(value ?? '').trim().toLocaleLowerCase('tr');
+}
+
+export function getPrimaryVariety(product) {
+  const varieties = product?.varieties || [];
+  return varieties.find((v) => v.active !== false) ?? varieties[0] ?? null;
+}
+
+export function isMultiVarietyProduct(product) {
+  const varieties = product?.varieties || [];
+  if (varieties.length === 0) return false;
+  const active = varieties.filter((v) => v.active !== false);
+  if (active.length > 1) return true;
+  if (active.length === 1) {
+    return normalizeCatalogName(active[0].name) !== normalizeCatalogName(product?.name);
+  }
+  return varieties.length > 1;
+}
+
+export function countCategoryProducts(category) {
+  return (category.products || []).length;
+}
+
+export function applyCatalogRemovals(
+  categories,
+  { removedCategories = [], removedProducts = [], removedVariations = [] } = {}
+) {
+  const removedCategorySet = new Set(removedCategories);
+  const removedProductSet = new Set(removedProducts);
+  const removedVariationSet = new Set(removedVariations);
+
+  return categories
+    .filter((cat) => !removedCategorySet.has(cat.id))
+    .map((cat) => ({
+      ...cat,
+      products: (cat.products || [])
+        .filter((product) => !removedProductSet.has(product.id))
+        .map((product) => ({
+          ...product,
+          varieties: (product.varieties || []).filter(
+            (variety) => !removedVariationSet.has(variety.id)
+          ),
+        }))
+        .filter((product) => (product.varieties || []).length > 0),
+    }))
+    .filter((cat) => (cat.products || []).length > 0);
+}
+
 export function getVariationLabel(item) {
   if (item.productName && item.productName !== item.categoryName) {
     return `${item.productName} – ${item.variationName}`;

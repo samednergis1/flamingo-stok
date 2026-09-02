@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function AddStockModal({ categoryName, variation, onClose, onConfirm }) {
+export default function AddStockModal({ label, variation, onClose, onConfirm }) {
   const [amount, setAmount] = useState('');
 
   const handleSubmit = (e) => {
@@ -15,9 +15,7 @@ export default function AddStockModal({ categoryName, variation, onClose, onConf
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 shadow-xl dark:border-white/5 dark:bg-slate-900">
         <h3 className="text-lg font-bold">Stok Ekle</h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {categoryName} → {variation.name}
-        </p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{label}</p>
         <p className="mt-2 text-sm">
           Mevcut stok: <span className="font-bold accent-text">{variation.stock}</span>
         </p>

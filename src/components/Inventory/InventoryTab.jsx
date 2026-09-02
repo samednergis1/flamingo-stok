@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useStore from '../../store/useStore';
 import CategoryCard from './CategoryCard';
 import { AddCategoryModal } from './InventoryModals';
@@ -9,12 +9,20 @@ export default function InventoryTab() {
   const addCategory = useStore((s) => s.addCategory);
   const [expandedId, setExpandedId] = useState(categories[0]?.id ?? null);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const totalStock = categories.reduce((sum, c) => sum + countCategoryStock(c), 0);
-  const totalVarieties = categories.reduce(
-    (sum, c) => sum + (c.products || []).reduce((s, p) => s + (p.varieties || []).length, 0),
-    0
-  );
+  const totalProducts = categories.reduce((sum, c) => sum + (c.products || []).length, 0);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const handleNotify = ({ type, message }) => {
+    setToast({ type, message });
+  };
 
   return (
     <div className="space-y-4">
@@ -22,7 +30,7 @@ export default function InventoryTab() {
         <div>
           <h2 className="text-xl font-bold">Ürünler & Stok</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {categories.length} kategori · {totalVarieties} çeşit · {totalStock} toplam stok
+            {totalProducts} ürün · {totalStock} stok
           </p>
         </div>
         <button
@@ -34,6 +42,10 @@ export default function InventoryTab() {
         </button>
       </div>
 
+      {toast && (
+        <div className={toast.type === 'success' ? 'toast-success' : 'toast-error'}>{toast.message}</div>
+      )}
+
       <div className="space-y-3">
         {categories.map((category) => (
           <CategoryCard
@@ -42,6 +54,7 @@ export default function InventoryTab() {
             categories={categories}
             isExpanded={expandedId === category.id}
             onToggle={() => setExpandedId(expandedId === category.id ? null : category.id)}
+            onNotify={handleNotify}
           />
         ))}
       </div>

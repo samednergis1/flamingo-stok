@@ -110,6 +110,15 @@ function normalizeImport(data) {
     variationMeta:
       data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {},
     productMeta: data.productMeta && typeof data.productMeta === 'object' ? data.productMeta : {},
+    removedCatalogCategories: Array.isArray(data.removedCatalogCategories)
+      ? data.removedCatalogCategories
+      : [],
+    removedCatalogProducts: Array.isArray(data.removedCatalogProducts)
+      ? data.removedCatalogProducts
+      : [],
+    removedCatalogVariations: Array.isArray(data.removedCatalogVariations)
+      ? data.removedCatalogVariations
+      : [],
     theme: data.theme === 'dark' ? 'dark' : 'light',
   };
 }

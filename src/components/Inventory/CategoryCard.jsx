@@ -5,27 +5,242 @@ import {
   AddProductModal,
   AddVarietyModal,
   EditVarietyModal,
+  ConfirmDeleteModal,
 } from './InventoryModals';
-import { countCategoryStock, countCategoryVarieties, mainProductId } from '../../utils/catalog';
+import {
+  countCategoryStock,
+  countCategoryProducts,
+  getPrimaryVariety,
+  isMultiVarietyProduct,
+  mainProductId,
+} from '../../utils/catalog';
 import { formatMoney } from '../../utils/exportImport';
 
-export default function CategoryCard({ category, categories, isExpanded, onToggle }) {
+function stockBadgeClass(stock) {
+  if (stock <= 0) return 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400';
+  if (stock <= 5) return 'stock-badge-low';
+  return 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400';
+}
+
+function VarietyActions({ category, product, variety, multiVariety, onEdit, onAddStock, onDelete }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <button type="button" onClick={onEdit} className="btn-secondary px-2.5 py-1.5 text-xs">
+        Düzenle
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onAddStock({
+            categoryId: category.id,
+            productId: product.id,
+            variety,
+            productName: product.name,
+            multiVariety,
+          })
+        }
+        className="btn-primary px-2.5 py-1.5 text-xs"
+      >
+        + Stok
+      </button>
+      <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
+        Sil
+      </button>
+    </div>
+  );
+}
+
+function SimpleProductRow({
+  category,
+  product,
+  onEdit,
+  onAddStock,
+  onDelete,
+  onToggleProductActive,
+}) {
+  const variety = getPrimaryVariety(product);
+  if (!variety) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-slate-800/50">
+        <span className="text-sm font-medium dark:text-zinc-100">{product.name}</span>
+        <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
+          Sil
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:border dark:border-white/5 dark:bg-slate-800/50 ${
+        product.active === false || variety.active === false ? 'opacity-60' : ''
+      }`}
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <span className={`stock-badge ${stockBadgeClass(variety.stock)}`}>{variety.stock}</span>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium dark:text-zinc-100">{product.name}</span>
+            {product.group && (
+              <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-400">
+                {product.group}
+              </span>
+            )}
+            {(product.active === false || variety.active === false) && (
+              <span className="text-[10px] font-semibold uppercase text-gray-400">Pasif</span>
+            )}
+          </div>
+          {(variety.price != null || variety.cost != null) && (
+            <p className="text-xs text-gray-400">
+              {variety.price != null && `Fiyat: ${formatMoney(variety.price)}`}
+              {variety.price != null && variety.cost != null && ' · '}
+              {variety.cost != null && `Maliyet: ${formatMoney(variety.cost)}`}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {product.id !== mainProductId(category.id) && (
+          <button
+            type="button"
+            onClick={() => onToggleProductActive(product.active === false)}
+            className="btn-ghost px-2 py-1 text-xs"
+          >
+            {product.active === false ? 'Aktif' : 'Pasif'}
+          </button>
+        )}
+        <VarietyActions
+          category={category}
+          product={product}
+          variety={variety}
+          multiVariety={false}
+          onEdit={onEdit}
+          onAddStock={onAddStock}
+          onDelete={onDelete}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MultiVarietyProductBlock({
+  category,
+  product,
+  onAddVariety,
+  onEdit,
+  onAddStock,
+  onDeleteVariety,
+  onToggleProductActive,
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h4 className="font-semibold dark:text-zinc-100">{product.name}</h4>
+          {product.group && (
+            <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-400">
+              {product.group}
+            </span>
+          )}
+          {product.active === false && (
+            <span className="text-[10px] font-semibold uppercase text-gray-400">Pasif</span>
+          )}
+        </div>
+        <div className="flex gap-1.5">
+          {product.id !== mainProductId(category.id) && (
+            <button
+              type="button"
+              onClick={() => onToggleProductActive(product.active === false)}
+              className="btn-ghost px-2 py-1 text-xs"
+            >
+              {product.active === false ? 'Aktif' : 'Pasif'}
+            </button>
+          )}
+          <button type="button" onClick={onAddVariety} className="btn-secondary px-2.5 py-1 text-xs">
+            + Yeni Çeşit Ekle
+          </button>
+        </div>
+      </div>
+
+      {(product.varieties || []).length === 0 ? (
+        <p className="py-2 text-center text-xs text-gray-400">Henüz çeşit yok</p>
+      ) : (
+        <div className="space-y-2 pl-1">
+          {(product.varieties || []).map((variety) => (
+            <div
+              key={variety.id}
+              className={`flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:border dark:border-white/5 dark:bg-slate-800/50 ${
+                variety.active === false ? 'opacity-60' : ''
+              }`}
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <span className={`stock-badge ${stockBadgeClass(variety.stock)}`}>{variety.stock}</span>
+                <div className="min-w-0">
+                  <span className="font-medium dark:text-zinc-100">{variety.name}</span>
+                  {variety.active === false && (
+                    <span className="ml-2 text-[10px] uppercase text-gray-400">Pasif</span>
+                  )}
+                  {(variety.price != null || variety.cost != null) && (
+                    <p className="text-xs text-gray-400">
+                      {variety.price != null && `Fiyat: ${formatMoney(variety.price)}`}
+                      {variety.price != null && variety.cost != null && ' · '}
+                      {variety.cost != null && `Maliyet: ${formatMoney(variety.cost)}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <VarietyActions
+                category={category}
+                product={product}
+                variety={variety}
+                multiVariety
+                onEdit={() => onEdit(variety)}
+                onAddStock={onAddStock}
+                onDelete={() => onDeleteVariety(variety)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CategoryCard({ category, categories, isExpanded, onToggle, onNotify }) {
   const addProduct = useStore((s) => s.addProduct);
   const addVariety = useStore((s) => s.addVariety);
   const updateVariety = useStore((s) => s.updateVariety);
   const setVarietyActive = useStore((s) => s.setVarietyActive);
   const setProductActive = useStore((s) => s.setProductActive);
+  const deleteCategory = useStore((s) => s.deleteCategory);
+  const deleteProduct = useStore((s) => s.deleteProduct);
+  const deleteVariety = useStore((s) => s.deleteVariety);
 
   const [stockModal, setStockModal] = useState(null);
   const [addProductOpen, setAddProductOpen] = useState(false);
   const [addVarietyFor, setAddVarietyFor] = useState(null);
   const [editModal, setEditModal] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const categoryStock = countCategoryStock(category);
-  const varietyCount = countCategoryVarieties(category);
+  const productCount = countCategoryProducts(category);
   const lowStock = (category.products || []).flatMap((p) =>
     (p.varieties || []).filter((v) => v.active !== false && v.stock <= 5)
   );
+
+  const notify = (result) => {
+    onNotify?.({
+      type: result.success ? 'success' : 'error',
+      message: result.message,
+    });
+  };
+
+  const runDelete = () => {
+    if (!confirmDelete) return;
+    const result = confirmDelete.run();
+    notify(result);
+    if (result.success) setConfirmDelete(null);
+  };
 
   return (
     <>
@@ -53,7 +268,7 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
               )}
             </div>
             <p className="text-xs text-gray-500 dark:text-zinc-400">
-              {(category.products || []).length} ürün · {varietyCount} çeşit · {categoryStock} stok
+              {productCount} ürün · {categoryStock} stok
               {lowStock.length > 0 && (
                 <span className="ml-2 text-amber-600 dark:text-amber-400">
                   ⚠ {lowStock.length} düşük
@@ -65,116 +280,86 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
 
         {isExpanded && (
           <div className="animate-fade-in-up border-t border-gray-100 px-4 py-3 dark:border-white/5">
-            <button
-              type="button"
-              onClick={() => setAddProductOpen(true)}
-              className="btn-secondary mb-3 w-full text-sm"
-            >
-              + Ürün Ekle
-            </button>
+            <div className="mb-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setAddProductOpen(true)}
+                className="btn-secondary min-w-0 flex-1 text-sm"
+              >
+                + Ürün Ekle
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setConfirmDelete({
+                    title: 'Kategoriyi Sil',
+                    message:
+                      'Bu kategoriyi ve içindeki tüm ürünleri silmek istediğinize emin misiniz?',
+                    run: () => deleteCategory(category.id),
+                  })
+                }
+                className="btn-danger-outline shrink-0 px-3 text-sm"
+              >
+                🗑 Kategoriyi Sil
+              </button>
+            </div>
 
-            {(category.products || []).map((product) => (
-              <div key={product.id} className="mb-4 last:mb-0">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-semibold dark:text-zinc-100">{product.name}</h4>
-                    {product.group && (
-                      <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/15 dark:text-sky-400">
-                        {product.group}
-                      </span>
-                    )}
-                    {product.active === false && (
-                      <span className="text-[10px] font-semibold uppercase text-gray-400">Pasif</span>
-                    )}
-                  </div>
-                  <div className="flex gap-1.5">
-                    {product.id !== mainProductId(category.id) && (
-                      <button
-                        type="button"
-                        onClick={() => setProductActive(category.id, product.id, product.active === false)}
-                        className="btn-ghost px-2 py-1 text-xs"
-                      >
-                        {product.active === false ? 'Aktif' : 'Pasif'}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setAddVarietyFor(product)}
-                      className="btn-secondary px-2.5 py-1 text-xs"
-                    >
-                      + Yeni Çeşit Ekle
-                    </button>
-                  </div>
-                </div>
-
-                {(product.varieties || []).length === 0 ? (
-                  <p className="py-2 text-center text-xs text-gray-400">Henüz çeşit yok</p>
+            <div className="space-y-2">
+              {(category.products || []).map((product) =>
+                isMultiVarietyProduct(product) ? (
+                  <MultiVarietyProductBlock
+                    key={product.id}
+                    category={category}
+                    product={product}
+                    onAddVariety={() => setAddVarietyFor(product)}
+                    onEdit={(variety) => setEditModal({ variety, category, product })}
+                    onAddStock={setStockModal}
+                    onDeleteVariety={(variety) =>
+                      setConfirmDelete({
+                        title: 'Çeşidi Sil',
+                        message: `"${variety.name}" çeşidini silmek istediğinize emin misiniz?`,
+                        run: () => deleteVariety(category.id, product.id, variety.id),
+                      })
+                    }
+                    onToggleProductActive={(makeActive) =>
+                      setProductActive(category.id, product.id, makeActive)
+                    }
+                  />
                 ) : (
-                  <div className="space-y-2">
-                    {(product.varieties || []).map((variety) => (
-                      <div
-                        key={variety.id}
-                        className={`flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:border dark:border-white/5 dark:bg-slate-800/50 ${
-                          variety.active === false ? 'opacity-60' : ''
-                        }`}
-                      >
-                        <div className="flex min-w-0 flex-1 items-center gap-3">
-                          <span
-                            className={`stock-badge ${
-                              variety.stock <= 5
-                                ? 'stock-badge-low'
-                                : variety.stock <= 0
-                                  ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'
-                                  : 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400'
-                            }`}
-                          >
-                            {variety.stock}
-                          </span>
-                          <div className="min-w-0">
-                            <span className="font-medium dark:text-zinc-100">{variety.name}</span>
-                            {variety.active === false && (
-                              <span className="ml-2 text-[10px] uppercase text-gray-400">Pasif</span>
-                            )}
-                            {(variety.price != null || variety.cost != null) && (
-                              <p className="text-xs text-gray-400">
-                                {variety.price != null && `Fiyat: ${formatMoney(variety.price)}`}
-                                {variety.price != null && variety.cost != null && ' · '}
-                                {variety.cost != null && `Maliyet: ${formatMoney(variety.cost)}`}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setEditModal({ variety, category, product })}
-                            className="btn-secondary px-2.5 py-1.5 text-xs"
-                          >
-                            Düzenle
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setStockModal({ categoryId: category.id, productId: product.id, variety })
-                            }
-                            className="btn-primary px-2.5 py-1.5 text-xs"
-                          >
-                            + Stok
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                  <SimpleProductRow
+                    key={product.id}
+                    category={category}
+                    product={product}
+                    onEdit={() => {
+                      const variety = getPrimaryVariety(product);
+                      if (variety) setEditModal({ variety, category, product });
+                    }}
+                    onAddStock={setStockModal}
+                    onDelete={() =>
+                      setConfirmDelete({
+                        title: 'Ürünü Sil',
+                        message: `"${product.name}" ürününü silmek istediğinize emin misiniz?`,
+                        run: () => deleteProduct(category.id, product.id),
+                      })
+                    }
+                    onToggleProductActive={(makeActive) =>
+                      setProductActive(category.id, product.id, makeActive)
+                    }
+                  />
+                )
+              )}
+            </div>
           </div>
         )}
       </div>
 
       {stockModal && (
         <AddStockModal
-          categoryName={`${category.name} · ${stockModal.variety.name}`}
+          label={
+            stockModal.multiVariety
+              ? `${category.name} · ${stockModal.productName} · ${stockModal.variety.name}`
+              : `${category.name} · ${stockModal.productName}`
+          }
           variation={stockModal.variety}
           onClose={() => setStockModal(null)}
           onConfirm={(amount) => {
@@ -183,6 +368,15 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
               .addStock(stockModal.categoryId, stockModal.productId, stockModal.variety.id, amount);
             setStockModal(null);
           }}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title={confirmDelete.title}
+          message={confirmDelete.message}
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={runDelete}
         />
       )}
 
