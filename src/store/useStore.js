@@ -513,15 +513,14 @@ const useStore = create((set, get) => ({
   deleteCategory: (categoryId) => {
     const category = get().categories.find((c) => c.id === categoryId);
     if (!category) return { success: false, message: 'Kategori bulunamadı' };
+    if (!category.custom) {
+      return { success: false, message: 'Sabit katalog kategorileri silinemez' };
+    }
 
     set((state) => {
-      const removedCatalogCategories = category.custom
-        ? state.removedCatalogCategories
-        : [...new Set([...state.removedCatalogCategories, categoryId])];
       const categories = state.categories.filter((c) => c.id !== categoryId);
-
-      persist({ ...state, categories, removedCatalogCategories });
-      return { categories, removedCatalogCategories };
+      persist({ ...state, categories });
+      return { categories };
     });
 
     return { success: true, message: 'Kategori başarıyla silindi' };
@@ -532,36 +531,23 @@ const useStore = create((set, get) => ({
     const category = state.categories.find((c) => c.id === categoryId);
     const product = category?.products.find((p) => p.id === productId);
     if (!category || !product) return { success: false, message: 'Ürün bulunamadı' };
+    if (!category.custom) {
+      return { success: false, message: 'Sabit katalog kategorilerinde silme yapılamaz' };
+    }
 
-    if (category.custom && product.id === mainProductId(categoryId)) {
+    if (product.id === mainProductId(categoryId)) {
       return { success: false, message: 'Ana ürün silinemez. Kategoriyi silin.' };
     }
 
-    const varietyIds = (product.varieties || []).map((v) => v.id);
-
     set((current) => {
-      const removedCatalogProducts = product.custom
-        ? current.removedCatalogProducts
-        : [...new Set([...current.removedCatalogProducts, productId])];
-      const removedCatalogVariations = product.custom
-        ? current.removedCatalogVariations
-        : [...new Set([...current.removedCatalogVariations, ...varietyIds])];
-
       const categories = current.categories
         .map((c) =>
-          c.id === categoryId
-            ? { ...c, products: c.products.filter((p) => p.id !== productId) }
-            : c
+          c.id === categoryId ? { ...c, products: c.products.filter((p) => p.id !== productId) } : c
         )
         .filter((c) => c.products.length > 0);
 
-      persist({
-        ...current,
-        categories,
-        removedCatalogProducts,
-        removedCatalogVariations,
-      });
-      return { categories, removedCatalogProducts, removedCatalogVariations };
+      persist({ ...current, categories });
+      return { categories };
     });
 
     return { success: true, message: 'Ürün başarıyla silindi' };
@@ -575,12 +561,11 @@ const useStore = create((set, get) => ({
     if (!category || !product || !variety) {
       return { success: false, message: 'Çeşit bulunamadı' };
     }
+    if (!category.custom) {
+      return { success: false, message: 'Sabit katalog kategorilerinde silme yapılamaz' };
+    }
 
     set((current) => {
-      const removedCatalogVariations = variety.custom
-        ? current.removedCatalogVariations
-        : [...new Set([...current.removedCatalogVariations, varietyId])];
-
       const categories = current.categories
         .map((c) => {
           if (c.id !== categoryId) return c;
@@ -599,8 +584,8 @@ const useStore = create((set, get) => ({
         })
         .filter((c) => c.products.length > 0);
 
-      persist({ ...current, categories, removedCatalogVariations });
-      return { categories, removedCatalogVariations };
+      persist({ ...current, categories });
+      return { categories };
     });
 
     return { success: true, message: 'Çeşit başarıyla silindi' };

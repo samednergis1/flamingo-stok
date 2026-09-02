@@ -22,7 +22,7 @@ function stockBadgeClass(stock) {
   return 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400';
 }
 
-function VarietyActions({ category, product, variety, multiVariety, onEdit, onAddStock, onDelete }) {
+function VarietyActions({ category, product, variety, multiVariety, onEdit, onAddStock, onDelete, allowDelete }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       <button type="button" onClick={onEdit} className="btn-secondary px-2.5 py-1.5 text-xs">
@@ -43,9 +43,11 @@ function VarietyActions({ category, product, variety, multiVariety, onEdit, onAd
       >
         + Stok
       </button>
-      <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
-        Sil
-      </button>
+      {allowDelete && (
+        <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
+          Sil
+        </button>
+      )}
     </div>
   );
 }
@@ -57,15 +59,18 @@ function SimpleProductRow({
   onAddStock,
   onDelete,
   onToggleProductActive,
+  allowDelete,
 }) {
   const variety = getPrimaryVariety(product);
   if (!variety) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-slate-800/50">
         <span className="text-sm font-medium dark:text-zinc-100">{product.name}</span>
-        <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
-          Sil
-        </button>
+        {allowDelete && (
+          <button type="button" onClick={onDelete} className="btn-danger-outline px-2.5 py-1.5 text-xs">
+            Sil
+          </button>
+        )}
       </div>
     );
   }
@@ -117,6 +122,7 @@ function SimpleProductRow({
           onEdit={onEdit}
           onAddStock={onAddStock}
           onDelete={onDelete}
+          allowDelete={allowDelete}
         />
       </div>
     </div>
@@ -131,6 +137,7 @@ function MultiVarietyProductBlock({
   onAddStock,
   onDeleteVariety,
   onToggleProductActive,
+  allowDelete,
 }) {
   return (
     <div className="space-y-2">
@@ -197,6 +204,7 @@ function MultiVarietyProductBlock({
                 onEdit={() => onEdit(variety)}
                 onAddStock={onAddStock}
                 onDelete={() => onDeleteVariety(variety)}
+                allowDelete={allowDelete}
               />
             </div>
           ))}
@@ -234,6 +242,8 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
       message: result.message,
     });
   };
+
+  const allowDelete = category.custom === true;
 
   const runDelete = () => {
     if (!confirmDelete) return;
@@ -284,24 +294,26 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
               <button
                 type="button"
                 onClick={() => setAddProductOpen(true)}
-                className="btn-secondary min-w-0 flex-1 text-sm"
+                className={`btn-secondary text-sm ${allowDelete ? 'min-w-0 flex-1' : 'w-full'}`}
               >
                 + Ürün Ekle
               </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setConfirmDelete({
-                    title: 'Kategoriyi Sil',
-                    message:
-                      'Bu kategoriyi ve içindeki tüm ürünleri silmek istediğinize emin misiniz?',
-                    run: () => deleteCategory(category.id),
-                  })
-                }
-                className="btn-danger-outline shrink-0 px-3 text-sm"
-              >
-                🗑 Kategoriyi Sil
-              </button>
+              {allowDelete && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfirmDelete({
+                      title: 'Kategoriyi Sil',
+                      message:
+                        'Bu kategoriyi ve içindeki tüm ürünleri silmek istediğinize emin misiniz?',
+                      run: () => deleteCategory(category.id),
+                    })
+                  }
+                  className="btn-danger-outline shrink-0 px-3 text-sm"
+                >
+                  🗑 Kategoriyi Sil
+                </button>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -324,6 +336,7 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
                     onToggleProductActive={(makeActive) =>
                       setProductActive(category.id, product.id, makeActive)
                     }
+                    allowDelete={allowDelete}
                   />
                 ) : (
                   <SimpleProductRow
@@ -345,6 +358,7 @@ export default function CategoryCard({ category, categories, isExpanded, onToggl
                     onToggleProductActive={(makeActive) =>
                       setProductActive(category.id, product.id, makeActive)
                     }
+                    allowDelete={allowDelete}
                   />
                 )
               )}
