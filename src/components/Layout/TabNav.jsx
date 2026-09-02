@@ -3,6 +3,7 @@ import useStore from '../../store/useStore';
 const TABS = [
   { id: 'inventory', label: 'Stok', icon: '📦' },
   { id: 'pos', label: 'Satış', icon: '🛒' },
+  { id: 'ikram', label: 'İkram', icon: '🎁' },
   { id: 'reports', label: 'Raporlar', icon: '📊' },
   { id: 'data', label: 'Veri', icon: '💾' },
 ];

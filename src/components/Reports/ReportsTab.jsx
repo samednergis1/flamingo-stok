@@ -2,31 +2,52 @@ import { useState, useMemo } from 'react';
 import useStore from '../../store/useStore';
 import {
   filterSalesByRange,
+  filterRecordsByRange,
   formatReportPeriod,
   formatReportWeekday,
   toDateKey,
 } from '../../utils/dateFilters';
-import { analyzeSales } from '../../utils/exportImport';
+import {
+  analyzeSales,
+  analyzeIkrams,
+  computeSalesRevenue,
+  computeIkramCost,
+  formatMoney,
+} from '../../utils/exportImport';
 import TimeFilter from './TimeFilter';
 import CategoryChart from './CategoryChart';
 import VariationAnalysis from './VariationAnalysis';
 
 export default function ReportsTab() {
   const sales = useStore((s) => s.sales);
+  const ikrams = useStore((s) => s.ikrams);
+  const categories = useStore((s) => s.categories);
 
   const [timeFilter, setTimeFilter] = useState('today');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [selectedDay, setSelectedDay] = useState(toDateKey());
+  const [reportView, setReportView] = useState('overview');
 
   const filteredSales = useMemo(
     () => filterSalesByRange(sales, timeFilter, customStart, customEnd, selectedDay),
     [sales, timeFilter, customStart, customEnd, selectedDay]
   );
 
-  const analytics = useMemo(
-    () => analyzeSales(filteredSales),
-    [filteredSales]
+  const filteredIkrams = useMemo(
+    () => filterRecordsByRange(ikrams, timeFilter, customStart, customEnd, selectedDay),
+    [ikrams, timeFilter, customStart, customEnd, selectedDay]
+  );
+
+  const salesAnalytics = useMemo(() => analyzeSales(filteredSales), [filteredSales]);
+  const ikramAnalytics = useMemo(() => analyzeIkrams(filteredIkrams), [filteredIkrams]);
+  const salesRevenue = useMemo(
+    () => computeSalesRevenue(filteredSales, categories),
+    [filteredSales, categories]
+  );
+  const ikramCost = useMemo(
+    () => computeIkramCost(filteredIkrams, categories),
+    [filteredIkrams, categories]
   );
 
   const periodLabel = useMemo(
@@ -55,12 +76,16 @@ export default function ReportsTab() {
     }
   };
 
+  const hasSales = salesAnalytics.totalItems > 0;
+  const hasIkrams = ikramAnalytics.totalItems > 0;
+  const hasAnyData = hasSales || hasIkrams;
+
   return (
     <div className="space-y-5">
       <div>
         <h2 className="text-xl font-bold">Raporlar & Analiz</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Satış performansınızı takip edin
+          Satış ve ikram performansınızı takip edin
         </p>
       </div>
 
@@ -92,27 +117,98 @@ export default function ReportsTab() {
         onSelectedDayChange={setSelectedDay}
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatCard label="Toplam Satış" value={analytics.totalItems} icon="🛍" />
-        <StatCard label="İşlem Sayısı" value={analytics.saleCount} icon="🧾" />
-        <StatCard
-          label="Kategori"
-          value={analytics.categoryBreakdown.length}
-          icon="📂"
-          className="col-span-2 sm:col-span-1"
-        />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="Satış Adedi" value={salesAnalytics.totalItems} icon="🛍" />
+        <StatCard label="Satış Geliri" value={formatMoney(salesRevenue)} icon="💰" />
+        <StatCard label="İkram Adedi" value={ikramAnalytics.totalItems} icon="🎁" />
+        <StatCard label="İkram Maliyeti" value={formatMoney(ikramCost)} icon="📉" />
       </div>
 
-      {analytics.totalItems === 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {[
+          { id: 'overview', label: 'Özet' },
+          { id: 'sales', label: 'Satışlar' },
+          { id: 'ikrams', label: 'İkramlar' },
+        ].map((view) => (
+          <button
+            key={view.id}
+            type="button"
+            onClick={() => setReportView(view.id)}
+            className={`rounded-xl px-4 py-2 text-sm font-medium transition active:scale-95 ${
+              reportView === view.id ? 'filter-btn-active' : 'btn-secondary !shadow-none'
+            }`}
+          >
+            {view.label}
+          </button>
+        ))}
+      </div>
+
+      {!hasAnyData ? (
         <div className="card py-12 text-center text-gray-400">
           <p className="text-4xl">📊</p>
-          <p className="mt-2 font-medium">
-            {periodLabel} için satış verisi yok
-          </p>
-          <p className="text-sm">Satış sekmesinden işlem yaptıkça burada görünür</p>
+          <p className="mt-2 font-medium">{periodLabel} için veri yok</p>
+          <p className="text-sm">Satış veya ikram yaptıkça burada görünür</p>
         </div>
       ) : (
         <>
+          {(reportView === 'overview' || reportView === 'sales') && (
+            <ReportSection
+              title="Satış Raporu"
+              subtitle={`${salesAnalytics.saleCount} işlem · ${formatMoney(salesRevenue)} gelir`}
+              emptyMessage={`${periodLabel} için satış verisi yok`}
+              hasData={hasSales}
+              analytics={salesAnalytics}
+            />
+          )}
+
+          {(reportView === 'overview' || reportView === 'ikrams') && (
+            <ReportSection
+              title="İkram Raporu"
+              subtitle={`${ikramAnalytics.ikramCount} işlem · ${formatMoney(ikramCost)} maliyet · gelire dahil değil`}
+              emptyMessage={`${periodLabel} için ikram verisi yok`}
+              hasData={hasIkrams}
+              analytics={ikramAnalytics}
+              accent="amber"
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function ReportSection({ title, subtitle, emptyMessage, hasData, analytics, accent }) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className={`text-lg font-bold ${accent === 'amber' ? 'text-amber-700 dark:text-amber-400' : ''}`}>
+          {title}
+        </h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+      </div>
+
+      {!hasData ? (
+        <div className="card py-8 text-center text-gray-400">
+          <p className="text-sm">{emptyMessage}</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <StatCard label="Toplam Adet" value={analytics.totalItems} icon="📦" compact />
+            <StatCard
+              label="İşlem Sayısı"
+              value={analytics.saleCount ?? analytics.ikramCount}
+              icon="🧾"
+              compact
+            />
+            <StatCard
+              label="Kategori"
+              value={analytics.categoryBreakdown.length}
+              icon="📂"
+              className="col-span-2 sm:col-span-1"
+              compact
+            />
+          </div>
           <CategoryChart data={analytics.categoryBreakdown} />
           <VariationAnalysis data={analytics.variationBreakdown} />
         </>
@@ -121,12 +217,12 @@ export default function ReportsTab() {
   );
 }
 
-function StatCard({ label, value, icon, className = '' }) {
+function StatCard({ label, value, icon, className = '', compact = false }) {
   return (
     <div className={`card flex items-center gap-3 ${className}`}>
-      <span className="text-2xl">{icon}</span>
+      <span className={compact ? 'text-xl' : 'text-2xl'}>{icon}</span>
       <div>
-        <p className="text-2xl font-bold accent-text">{value}</p>
+        <p className={`font-bold accent-text ${compact ? 'text-xl' : 'text-2xl'}`}>{value}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
       </div>
     </div>

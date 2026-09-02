@@ -122,16 +122,55 @@ export async function fetchCatalog() {
   return FALLBACK_CATALOG;
 }
 
-export function mergeCatalogWithStock(catalogCategories, stockMap = {}) {
-  return catalogCategories.map((cat) => ({
+function parseMoney(value) {
+  if (value === '' || value == null) return null;
+  const num = parseFloat(String(value).replace(',', '.'));
+  return Number.isFinite(num) && num >= 0 ? num : null;
+}
+
+function applyVariationMeta(variation, stockMap, variationMeta = {}) {
+  const meta = variationMeta[variation.id] || {};
+  return {
+    id: variation.id,
+    name: meta.name ?? variation.name,
+    stock: stockMap[variation.id] ?? 0,
+    price: meta.price ?? variation.price ?? null,
+    cost: meta.cost ?? variation.cost ?? null,
+  };
+}
+
+export function buildCategories(
+  catalogCategories,
+  stockMap = {},
+  customCategories = [],
+  variationMeta = {}
+) {
+  const catalogMerged = catalogCategories.map((cat) => ({
     id: cat.id,
     name: cat.name,
-    variations: cat.variations.map((v) => ({
+    custom: false,
+    variations: cat.variations.map((v) => applyVariationMeta(v, stockMap, variationMeta)),
+  }));
+
+  const customMerged = (customCategories || []).map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    custom: true,
+    variations: (cat.variations || []).map((v) => ({
       id: v.id,
       name: v.name,
-      stock: stockMap[v.id] ?? 0,
+      stock: stockMap[v.id] ?? v.stock ?? 0,
+      price: v.price ?? null,
+      cost: v.cost ?? null,
     })),
   }));
+
+  return [...catalogMerged, ...customMerged];
+}
+
+/** @deprecated use buildCategories */
+export function mergeCatalogWithStock(catalogCategories, stockMap = {}) {
+  return buildCategories(catalogCategories, stockMap, [], {});
 }
 
 export function extractStock(categories) {
@@ -143,6 +182,51 @@ export function extractStock(categories) {
   }
   return stock;
 }
+
+export function extractCustomCategories(categories) {
+  return categories
+    .filter((c) => c.custom)
+    .map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      variations: cat.variations.map((v) => ({
+        id: v.id,
+        name: v.name,
+        price: v.price ?? null,
+        cost: v.cost ?? null,
+      })),
+    }));
+}
+
+export function extractVariationMeta(catalogCategories, categories) {
+  const catalogNames = new Map();
+  for (const cat of catalogCategories) {
+    for (const v of cat.variations) {
+      catalogNames.set(v.id, v.name);
+    }
+  }
+
+  const meta = {};
+  for (const cat of categories) {
+    if (cat.custom) continue;
+    for (const v of cat.variations) {
+      const originalName = catalogNames.get(v.id);
+      const entry = {};
+      if (originalName && v.name !== originalName) entry.name = v.name;
+      if (v.price != null) entry.price = v.price;
+      if (v.cost != null) entry.cost = v.cost;
+      if (Object.keys(entry).length) meta[v.id] = entry;
+    }
+  }
+  return meta;
+}
+
+export function findVariation(categories, categoryId, variationId) {
+  const category = categories.find((c) => c.id === categoryId);
+  return category?.variations.find((v) => v.id === variationId) ?? null;
+}
+
+export { parseMoney };
 
 export function migrateStockFromLegacy(legacyCategories, catalogCategories) {
   const stock = {};

@@ -54,9 +54,13 @@ export function getDateRange(filter, customStart, customEnd, selectedDay) {
 }
 
 export function filterSalesByRange(sales, filter, customStart, customEnd, selectedDay) {
+  return filterRecordsByRange(sales, filter, customStart, customEnd, selectedDay);
+}
+
+export function filterRecordsByRange(records, filter, customStart, customEnd, selectedDay) {
   const { start, end } = getDateRange(filter, customStart, customEnd, selectedDay);
-  return sales.filter((sale) => {
-    const ts = new Date(sale.timestamp);
+  return records.filter((record) => {
+    const ts = new Date(record.timestamp);
     return ts >= start && ts <= end;
   });
 }

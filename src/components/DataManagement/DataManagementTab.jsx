@@ -1,11 +1,17 @@
 import { useRef, useState } from 'react';
 import useStore from '../../store/useStore';
-import { extractStock } from '../../utils/catalog';
-import { exportDataAsJson, exportSalesAsCsv, parseImportFile } from '../../utils/exportImport';
+import { extractStock, extractCustomCategories, extractVariationMeta, fetchCatalog } from '../../utils/catalog';
+import {
+  exportDataAsJson,
+  exportSalesAsCsv,
+  exportIkramsAsCsv,
+  parseImportFile,
+} from '../../utils/exportImport';
 
 export default function DataManagementTab() {
   const categories = useStore((s) => s.categories);
   const sales = useStore((s) => s.sales);
+  const ikrams = useStore((s) => s.ikrams);
   const theme = useStore((s) => s.theme);
   const importData = useStore((s) => s.importData);
   const resetData = useStore((s) => s.resetData);
@@ -23,8 +29,16 @@ export default function DataManagementTab() {
     setTimeout(() => setMessage(null), 4000);
   };
 
-  const handleExportJson = () => {
-    exportDataAsJson({ stock: extractStock(categories), sales, theme });
+  const handleExportJson = async () => {
+    const catalog = await fetchCatalog();
+    exportDataAsJson({
+      stock: extractStock(categories),
+      sales,
+      ikrams,
+      customCategories: extractCustomCategories(categories),
+      variationMeta: extractVariationMeta(catalog.categories, categories),
+      theme,
+    });
     showMessage('success', 'JSON yedek indirildi ✓');
   };
 
@@ -37,13 +51,22 @@ export default function DataManagementTab() {
     showMessage('success', 'CSV satış raporu indirildi ✓');
   };
 
+  const handleExportIkramCsv = () => {
+    if (ikrams.length === 0) {
+      showMessage('error', 'Dışa aktarılacak ikram verisi yok');
+      return;
+    }
+    exportIkramsAsCsv(ikrams);
+    showMessage('success', 'CSV ikram raporu indirildi ✓');
+  };
+
   const handleImport = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       const data = await parseImportFile(file);
-      if (confirm('Mevcut stok ve satış verilerinin üzerine yazılacak. Devam?')) {
+      if (confirm('Mevcut stok, satış ve ikram verilerinin üzerine yazılacak. Devam?')) {
         await importData(data);
         showMessage('success', 'Veriler başarıyla geri yüklendi ✓');
       }
@@ -55,9 +78,9 @@ export default function DataManagementTab() {
   };
 
   const handleReset = async () => {
-    if (confirm('Tüm stok ve satış kayıtları silinecek. Emin misiniz?')) {
+    if (confirm('Tüm stok, satış ve ikram kayıtları silinecek. Emin misiniz?')) {
       await resetData();
-      showMessage('success', 'Stok ve satışlar sıfırlandı ✓');
+      showMessage('success', 'Stok, satış ve ikramlar sıfırlandı ✓');
     }
   };
 
@@ -66,7 +89,7 @@ export default function DataManagementTab() {
       <div>
         <h2 className="text-xl font-bold">Veri Yönetimi</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Stok ve satış yedekleme
+          Stok, satış ve ikram yedekleme
         </p>
       </div>
 
@@ -84,7 +107,7 @@ export default function DataManagementTab() {
 
       <div className="card">
         <h3 className="mb-3 font-bold">Veri Özeti</h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <SummaryItem label="Kategori" value={categories.length} />
           <SummaryItem
             label="Çeşit"
@@ -92,13 +115,14 @@ export default function DataManagementTab() {
           />
           <SummaryItem label="Toplam Stok" value={totalStock} />
           <SummaryItem label="Satış Kaydı" value={sales.length} />
+          <SummaryItem label="İkram Kaydı" value={ikrams.length} />
         </div>
       </div>
 
       <div className="card space-y-4">
         <h3 className="font-bold">Dışa Aktar</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Stok miktarları ve satış geçmişini yedekleyin
+          Stok, satış ve ikram geçmişini yedekleyin
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <button type="button" onClick={handleExportJson} className="btn-primary flex-1">
@@ -107,13 +131,16 @@ export default function DataManagementTab() {
           <button type="button" onClick={handleExportCsv} className="btn-secondary flex-1">
             📊 Satışları CSV İndir
           </button>
+          <button type="button" onClick={handleExportIkramCsv} className="btn-secondary flex-1">
+            🎁 İkramları CSV İndir
+          </button>
         </div>
       </div>
 
       <div className="card space-y-4">
         <h3 className="font-bold">İçe Aktar</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          JSON yedek dosyasından stok ve satışları geri yükleyin
+          JSON yedek dosyasından verileri geri yükleyin
         </p>
         <input
           ref={fileInputRef}
@@ -134,14 +161,14 @@ export default function DataManagementTab() {
       <div className="card border-red-200 dark:border-red-900">
         <h3 className="font-bold text-red-600 dark:text-red-400">Tehlikeli Bölge</h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Stok ve satış kayıtlarını sıfırlar (kategoriler değişmez)
+          Stok, satış ve ikram kayıtlarını sıfırlar (kategoriler değişmez)
         </p>
         <button
           type="button"
           onClick={handleReset}
           className="mt-3 w-full rounded-xl border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
         >
-          Stok & Satışları Sıfırla
+          Stok, Satış & İkramları Sıfırla
         </button>
       </div>
     </div>

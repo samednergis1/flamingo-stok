@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import useStore from '../../store/useStore';
 import CategoryCard from './CategoryCard';
+import { AddCategoryModal } from './InventoryModals';
 
 export default function InventoryTab() {
   const categories = useStore((s) => s.categories);
+  const addCategory = useStore((s) => s.addCategory);
   const [expandedId, setExpandedId] = useState(categories[0]?.id ?? null);
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
 
   const totalStock = categories.reduce(
     (sum, c) => sum + c.variations.reduce((s, v) => s + v.stock, 0),
@@ -20,6 +23,13 @@ export default function InventoryTab() {
             {categories.length} kategori · {totalStock} toplam stok
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setAddCategoryOpen(true)}
+          className="btn-primary shrink-0"
+        >
+          + Kategori Ekle
+        </button>
       </div>
 
       <div className="space-y-3">
@@ -27,11 +37,19 @@ export default function InventoryTab() {
           <CategoryCard
             key={category.id}
             category={category}
+            categories={categories}
             isExpanded={expandedId === category.id}
             onToggle={() => setExpandedId(expandedId === category.id ? null : category.id)}
           />
         ))}
       </div>
+
+      {addCategoryOpen && (
+        <AddCategoryModal
+          onClose={() => setAddCategoryOpen(false)}
+          onConfirm={addCategory}
+        />
+      )}
     </div>
   );
 }

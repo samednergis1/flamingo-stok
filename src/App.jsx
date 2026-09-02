@@ -5,12 +5,14 @@ import Header from './components/Layout/Header';
 import TabNav from './components/Layout/TabNav';
 import InventoryTab from './components/Inventory/InventoryTab';
 import POSTab from './components/POS/POSTab';
+import IkramTab from './components/Ikram/IkramTab';
 import ReportsTab from './components/Reports/ReportsTab';
 import DataManagementTab from './components/DataManagement/DataManagementTab';
 
 const TABS = {
   inventory: InventoryTab,
   pos: POSTab,
+  ikram: IkramTab,
   reports: ReportsTab,
   data: DataManagementTab,
 };

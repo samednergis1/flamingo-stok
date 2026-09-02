@@ -1,4 +1,4 @@
-import { extractStock } from '../utils/catalog';
+import { extractStock } from './catalog';
 
 export function exportDataAsJson(data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -25,6 +25,29 @@ export function exportSalesAsCsv(sales) {
     }
   }
 
+  writeCsv(`flamingo-bar-satislar-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
+
+export function exportIkramsAsCsv(ikrams) {
+  const headers = ['Tarih', 'Kategori', 'Çeşit', 'Adet', 'Not'];
+  const rows = [];
+
+  for (const ikram of ikrams) {
+    for (const item of ikram.items) {
+      rows.push([
+        new Date(ikram.timestamp).toLocaleString('tr-TR'),
+        item.categoryName,
+        item.variationName,
+        item.quantity,
+        ikram.note || '',
+      ]);
+    }
+  }
+
+  writeCsv(`flamingo-bar-ikramlar-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
+
+function writeCsv(filename, headers, rows) {
   const csv =
     '\uFEFF' +
     [headers, ...rows]
@@ -35,7 +58,7 @@ export function exportSalesAsCsv(sales) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `flamingo-bar-satislar-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -51,6 +74,10 @@ export function parseImportFile(file) {
           resolve({
             stock: data.stock,
             sales: Array.isArray(data.sales) ? data.sales : [],
+            ikrams: Array.isArray(data.ikrams) ? data.ikrams : [],
+            customCategories: Array.isArray(data.customCategories) ? data.customCategories : [],
+            variationMeta:
+              data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {},
             theme: data.theme === 'dark' ? 'dark' : 'light',
           });
           return;
@@ -60,6 +87,10 @@ export function parseImportFile(file) {
           resolve({
             stock: extractStock(data.categories),
             sales: Array.isArray(data.sales) ? data.sales : [],
+            ikrams: Array.isArray(data.ikrams) ? data.ikrams : [],
+            customCategories: Array.isArray(data.customCategories) ? data.customCategories : [],
+            variationMeta:
+              data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {},
             theme: data.theme === 'dark' ? 'dark' : 'light',
           });
           return;
@@ -75,13 +106,13 @@ export function parseImportFile(file) {
   });
 }
 
-export function analyzeSales(filteredSales) {
+function aggregateItems(records) {
   let totalItems = 0;
   const byCategory = {};
   const byVariation = {};
 
-  for (const sale of filteredSales) {
-    for (const item of sale.items) {
+  for (const record of records) {
+    for (const item of record.items) {
       totalItems += item.quantity;
       byCategory[item.categoryName] = (byCategory[item.categoryName] || 0) + item.quantity;
 
@@ -114,5 +145,83 @@ export function analyzeSales(filteredSales) {
     return { categoryName, categoryTotal, items };
   });
 
-  return { totalItems, categoryBreakdown, variationBreakdown, saleCount: filteredSales.length };
+  return { totalItems, categoryBreakdown, variationBreakdown, recordCount: records.length };
+}
+
+export function analyzeSales(filteredSales) {
+  const result = aggregateItems(filteredSales);
+  return {
+    totalItems: result.totalItems,
+    categoryBreakdown: result.categoryBreakdown,
+    variationBreakdown: result.variationBreakdown,
+    saleCount: result.recordCount,
+  };
+}
+
+export function analyzeIkrams(filteredIkrams) {
+  const result = aggregateItems(filteredIkrams);
+  return {
+    totalItems: result.totalItems,
+    categoryBreakdown: result.categoryBreakdown,
+    variationBreakdown: result.variationBreakdown,
+    ikramCount: result.recordCount,
+  };
+}
+
+export function computeSalesRevenue(filteredSales, categories) {
+  const priceMap = buildPriceMap(categories);
+  let total = 0;
+
+  for (const sale of filteredSales) {
+    for (const item of sale.items) {
+      const unitPrice =
+        item.unitPrice ?? priceMap.get(`${item.categoryId}::${item.variationId}`) ?? 0;
+      total += unitPrice * item.quantity;
+    }
+  }
+
+  return total;
+}
+
+export function computeIkramCost(filteredIkrams, categories) {
+  const costMap = buildCostMap(categories);
+  let total = 0;
+
+  for (const ikram of filteredIkrams) {
+    for (const item of ikram.items) {
+      const unitCost = item.unitCost ?? costMap.get(`${item.categoryId}::${item.variationId}`) ?? 0;
+      total += unitCost * item.quantity;
+    }
+  }
+
+  return total;
+}
+
+function buildPriceMap(categories) {
+  const map = new Map();
+  for (const cat of categories) {
+    for (const v of cat.variations) {
+      map.set(`${cat.id}::${v.id}`, v.price ?? 0);
+    }
+  }
+  return map;
+}
+
+function buildCostMap(categories) {
+  const map = new Map();
+  for (const cat of categories) {
+    for (const v of cat.variations) {
+      map.set(`${cat.id}::${v.id}`, v.cost ?? 0);
+    }
+  }
+  return map;
+}
+
+export function formatMoney(amount) {
+  if (!amount) return '—';
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
