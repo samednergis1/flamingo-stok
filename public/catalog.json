@@ -7,9 +7,7 @@
         {
           "id": "fit-tabak",
           "name": "Fit Tabak",
-          "varieties": [
-            { "id": "fit-tabak-granola-cup", "name": "Granola Cup" }
-          ]
+          "varieties": [{ "id": "fit-tabak-granola-cup", "name": "Fit Tabak" }]
         },
         {
           "id": "proteinli-tabak",
