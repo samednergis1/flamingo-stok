@@ -11,14 +11,16 @@ export function exportDataAsJson(data) {
 }
 
 export function exportSalesAsCsv(sales) {
-  const headers = ['Tarih', 'Kategori', 'Çeşit', 'Adet'];
+  const headers = ['Tarih', 'Durum', 'Kategori', 'Ürün', 'Çeşit', 'Adet'];
   const rows = [];
 
   for (const sale of sales) {
     for (const item of sale.items) {
       rows.push([
         new Date(sale.timestamp).toLocaleString('tr-TR'),
+        sale.status === 'cancelled' ? 'İptal' : 'Tamamlandı',
         item.categoryName,
+        item.productName || item.categoryName,
         item.variationName,
         item.quantity,
       ]);
@@ -29,7 +31,7 @@ export function exportSalesAsCsv(sales) {
 }
 
 export function exportIkramsAsCsv(ikrams) {
-  const headers = ['Tarih', 'Kategori', 'Çeşit', 'Adet', 'Not'];
+  const headers = ['Tarih', 'Kategori', 'Ürün', 'Çeşit', 'Adet', 'Not', 'Personel'];
   const rows = [];
 
   for (const ikram of ikrams) {
@@ -37,9 +39,11 @@ export function exportIkramsAsCsv(ikrams) {
       rows.push([
         new Date(ikram.timestamp).toLocaleString('tr-TR'),
         item.categoryName,
+        item.productName || item.categoryName,
         item.variationName,
         item.quantity,
         ikram.note || '',
+        ikram.username || '',
       ]);
     }
   }
@@ -71,27 +75,14 @@ export function parseImportFile(file) {
         const data = JSON.parse(e.target.result);
 
         if (data.stock && typeof data.stock === 'object') {
-          resolve({
-            stock: data.stock,
-            sales: Array.isArray(data.sales) ? data.sales : [],
-            ikrams: Array.isArray(data.ikrams) ? data.ikrams : [],
-            customCategories: Array.isArray(data.customCategories) ? data.customCategories : [],
-            variationMeta:
-              data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {},
-            theme: data.theme === 'dark' ? 'dark' : 'light',
-          });
+          resolve(normalizeImport(data));
           return;
         }
 
         if (data.categories && Array.isArray(data.categories)) {
           resolve({
+            ...normalizeImport(data),
             stock: extractStock(data.categories),
-            sales: Array.isArray(data.sales) ? data.sales : [],
-            ikrams: Array.isArray(data.ikrams) ? data.ikrams : [],
-            customCategories: Array.isArray(data.customCategories) ? data.customCategories : [],
-            variationMeta:
-              data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {},
-            theme: data.theme === 'dark' ? 'dark' : 'light',
           });
           return;
         }
@@ -106,21 +97,42 @@ export function parseImportFile(file) {
   });
 }
 
+function normalizeImport(data) {
+  return {
+    stock: data.stock ?? {},
+    sales: Array.isArray(data.sales) ? data.sales : [],
+    ikrams: Array.isArray(data.ikrams) ? data.ikrams : [],
+    customCategories: Array.isArray(data.customCategories) ? data.customCategories : [],
+    customProducts: Array.isArray(data.customProducts) ? data.customProducts : [],
+    customVariations: Array.isArray(data.customVariations) ? data.customVariations : [],
+    variationMeta:
+      data.variationMeta && typeof data.variationMeta === 'object' ? data.variationMeta : {},
+    productMeta: data.productMeta && typeof data.productMeta === 'object' ? data.productMeta : {},
+    theme: data.theme === 'dark' ? 'dark' : 'light',
+  };
+}
+
+function itemLabel(item) {
+  const product = item.productName || item.categoryName;
+  return `${product} – ${item.variationName}`;
+}
+
 function aggregateItems(records) {
   let totalItems = 0;
   const byCategory = {};
-  const byVariation = {};
+  const byProductVariety = {};
 
   for (const record of records) {
     for (const item of record.items) {
       totalItems += item.quantity;
       byCategory[item.categoryName] = (byCategory[item.categoryName] || 0) + item.quantity;
 
-      if (!byVariation[item.categoryName]) {
-        byVariation[item.categoryName] = {};
+      const label = itemLabel(item);
+      if (!byProductVariety[item.categoryName]) {
+        byProductVariety[item.categoryName] = {};
       }
-      byVariation[item.categoryName][item.variationName] =
-        (byVariation[item.categoryName][item.variationName] || 0) + item.quantity;
+      byProductVariety[item.categoryName][label] =
+        (byProductVariety[item.categoryName][label] || 0) + item.quantity;
     }
   }
 
@@ -132,9 +144,9 @@ function aggregateItems(records) {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const variationBreakdown = Object.entries(byVariation).map(([categoryName, variations]) => {
-    const categoryTotal = Object.values(variations).reduce((s, v) => s + v, 0);
-    const items = Object.entries(variations)
+  const variationBreakdown = Object.entries(byProductVariety).map(([categoryName, labels]) => {
+    const categoryTotal = Object.values(labels).reduce((s, v) => s + v, 0);
+    const items = Object.entries(labels)
       .map(([name, count]) => ({
         name,
         count,
@@ -148,8 +160,13 @@ function aggregateItems(records) {
   return { totalItems, categoryBreakdown, variationBreakdown, recordCount: records.length };
 }
 
+export function getActiveSales(sales) {
+  return sales.filter((s) => s.status !== 'cancelled');
+}
+
 export function analyzeSales(filteredSales) {
-  const result = aggregateItems(filteredSales);
+  const active = getActiveSales(filteredSales);
+  const result = aggregateItems(active);
   return {
     totalItems: result.totalItems,
     categoryBreakdown: result.categoryBreakdown,
@@ -172,10 +189,13 @@ export function computeSalesRevenue(filteredSales, categories) {
   const priceMap = buildPriceMap(categories);
   let total = 0;
 
-  for (const sale of filteredSales) {
+  for (const sale of getActiveSales(filteredSales)) {
     for (const item of sale.items) {
       const unitPrice =
-        item.unitPrice ?? priceMap.get(`${item.categoryId}::${item.variationId}`) ?? 0;
+        item.unitPrice ??
+        priceMap.get(`${item.categoryId}::${item.productId || ''}::${item.variationId}`) ??
+        priceMap.get(`${item.categoryId}::::${item.variationId}`) ??
+        0;
       total += unitPrice * item.quantity;
     }
   }
@@ -189,7 +209,11 @@ export function computeIkramCost(filteredIkrams, categories) {
 
   for (const ikram of filteredIkrams) {
     for (const item of ikram.items) {
-      const unitCost = item.unitCost ?? costMap.get(`${item.categoryId}::${item.variationId}`) ?? 0;
+      const unitCost =
+        item.unitCost ??
+        costMap.get(`${item.categoryId}::${item.productId || ''}::${item.variationId}`) ??
+        costMap.get(`${item.categoryId}::::${item.variationId}`) ??
+        0;
       total += unitCost * item.quantity;
     }
   }
@@ -200,8 +224,11 @@ export function computeIkramCost(filteredIkrams, categories) {
 function buildPriceMap(categories) {
   const map = new Map();
   for (const cat of categories) {
-    for (const v of cat.variations) {
-      map.set(`${cat.id}::${v.id}`, v.price ?? 0);
+    for (const p of cat.products || []) {
+      for (const v of p.varieties || []) {
+        map.set(`${cat.id}::${p.id}::${v.id}`, v.price ?? 0);
+        map.set(`${cat.id}::::${v.id}`, v.price ?? 0);
+      }
     }
   }
   return map;
@@ -210,8 +237,11 @@ function buildPriceMap(categories) {
 function buildCostMap(categories) {
   const map = new Map();
   for (const cat of categories) {
-    for (const v of cat.variations) {
-      map.set(`${cat.id}::${v.id}`, v.cost ?? 0);
+    for (const p of cat.products || []) {
+      for (const v of p.varieties || []) {
+        map.set(`${cat.id}::${p.id}::${v.id}`, v.cost ?? 0);
+        map.set(`${cat.id}::::${v.id}`, v.cost ?? 0);
+      }
     }
   }
   return map;
@@ -224,4 +254,14 @@ export function formatMoney(amount) {
     currency: 'TRY',
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+export function formatDateTime(iso) {
+  return new Date(iso).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

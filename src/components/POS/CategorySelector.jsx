@@ -1,7 +1,11 @@
+import { getActiveCategories } from '../../utils/catalog';
+
 export default function CategorySelector({ categories, selectedId, onSelect }) {
+  const activeCategories = getActiveCategories(categories);
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-      {categories.map((cat) => (
+      {activeCategories.map((cat) => (
         <button
           key={cat.id}
           type="button"

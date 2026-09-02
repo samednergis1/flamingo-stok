@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'flamingo-bar-data';
-export const DATA_VERSION = 4;
+export const DATA_VERSION = 5;
 
 export function loadFromStorage() {
   try {

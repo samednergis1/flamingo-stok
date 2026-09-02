@@ -1,6 +1,14 @@
 import { useRef, useState } from 'react';
 import useStore from '../../store/useStore';
-import { extractStock, extractCustomCategories, extractVariationMeta, fetchCatalog } from '../../utils/catalog';
+import {
+  extractStock,
+  extractCustomCategories,
+  extractCustomProducts,
+  extractCustomVariations,
+  extractVariationMeta,
+  extractProductMeta,
+  fetchCatalog,
+} from '../../utils/catalog';
 import {
   exportDataAsJson,
   exportSalesAsCsv,
@@ -20,7 +28,7 @@ export default function DataManagementTab() {
   const [message, setMessage] = useState(null);
 
   const totalStock = categories.reduce(
-    (sum, c) => sum + c.variations.reduce((s, v) => s + v.stock, 0),
+    (sum, c) => sum + (c.products || []).reduce((s, p) => s + (p.varieties || []).reduce((vs, v) => vs + v.stock, 0), 0),
     0
   );
 
@@ -36,7 +44,10 @@ export default function DataManagementTab() {
       sales,
       ikrams,
       customCategories: extractCustomCategories(categories),
+      customProducts: extractCustomProducts(categories),
+      customVariations: extractCustomVariations(categories),
       variationMeta: extractVariationMeta(catalog.categories, categories),
+      productMeta: extractProductMeta(categories),
       theme,
     });
     showMessage('success', 'JSON yedek indirildi ✓');
@@ -111,7 +122,10 @@ export default function DataManagementTab() {
           <SummaryItem label="Kategori" value={categories.length} />
           <SummaryItem
             label="Çeşit"
-            value={categories.reduce((s, c) => s + c.variations.length, 0)}
+            value={categories.reduce(
+              (s, c) => s + (c.products || []).reduce((ps, p) => ps + (p.varieties || []).length, 0),
+              0
+            )}
           />
           <SummaryItem label="Toplam Stok" value={totalStock} />
           <SummaryItem label="Satış Kaydı" value={sales.length} />

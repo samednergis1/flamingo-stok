@@ -1,30 +1,50 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import useStore from '../../store/useStore';
+import { getActiveCategories } from '../../utils/catalog';
 import CategorySelector from '../POS/CategorySelector';
+import ProductSelector from '../POS/ProductSelector';
 import VariationGrid from '../POS/VariationGrid';
 import IkramCart from './IkramCart';
 import IkramSuccessOverlay from './IkramSuccessOverlay';
+import IkramHistory from './IkramHistory';
 
 export default function IkramTab() {
   const categories = useStore((s) => s.categories);
   const completeIkram = useStore((s) => s.completeIkram);
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState(categories[0]?.id ?? null);
+  const activeCategories = useMemo(() => getActiveCategories(categories), [categories]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(activeCategories[0]?.id ?? null);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const [cart, setCart] = useState([]);
   const [note, setNote] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [successTotal, setSuccessTotal] = useState(null);
 
-  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+  const selectedCategory = activeCategories.find((c) => c.id === selectedCategoryId);
+  const products = selectedCategory?.products || [];
+  const effectiveProductId = selectedProductId || products[0]?.id || null;
+  const selectedProduct = products.find((p) => p.id === effectiveProductId);
 
-  const addToCart = (variation, qty = 1) => {
+  const handleCategorySelect = (id) => {
+    setSelectedCategoryId(id);
+    const cat = activeCategories.find((c) => c.id === id);
+    setSelectedProductId(cat?.products[0]?.id ?? null);
+  };
+
+  const addToCart = (variety, qty = 1) => {
+    if (!selectedCategory || !selectedProduct) return;
     setCart((prev) => {
       const existing = prev.find(
-        (item) => item.categoryId === selectedCategoryId && item.variationId === variation.id
+        (item) =>
+          item.categoryId === selectedCategoryId &&
+          item.productId === effectiveProductId &&
+          item.variationId === variety.id
       );
       if (existing) {
         return prev.map((item) =>
-          item.categoryId === selectedCategoryId && item.variationId === variation.id
+          item.categoryId === selectedCategoryId &&
+          item.productId === effectiveProductId &&
+          item.variationId === variety.id
             ? { ...item, quantity: item.quantity + qty }
             : item
         );
@@ -34,8 +54,10 @@ export default function IkramTab() {
         {
           categoryId: selectedCategoryId,
           categoryName: selectedCategory.name,
-          variationId: variation.id,
-          variationName: variation.name,
+          productId: effectiveProductId,
+          productName: selectedProduct.name,
+          variationId: variety.id,
+          variationName: variety.name,
           quantity: qty,
         },
       ];
@@ -43,15 +65,24 @@ export default function IkramTab() {
     setErrorMessage(null);
   };
 
-  const updateCartQty = (categoryId, variationId, quantity) => {
+  const updateCartQty = (categoryId, productId, variationId, quantity) => {
     if (quantity <= 0) {
       setCart((prev) =>
-        prev.filter((item) => !(item.categoryId === categoryId && item.variationId === variationId))
+        prev.filter(
+          (item) =>
+            !(
+              item.categoryId === categoryId &&
+              item.productId === productId &&
+              item.variationId === variationId
+            )
+        )
       );
     } else {
       setCart((prev) =>
         prev.map((item) =>
-          item.categoryId === categoryId && item.variationId === variationId
+          item.categoryId === categoryId &&
+          item.productId === productId &&
+          item.variationId === variationId
             ? { ...item, quantity }
             : item
         )
@@ -80,7 +111,7 @@ export default function IkramTab() {
         <div>
           <h2 className="text-xl font-bold">Misafir İkramı</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kategori Seç → Ürün Ekle → İkramı Tamamla (ücretsiz)
+            Kategori Seç → Ürün Seç → Çeşit Ekle → İkramı Tamamla (ücretsiz)
           </p>
         </div>
 
@@ -89,11 +120,19 @@ export default function IkramTab() {
         <CategorySelector
           categories={categories}
           selectedId={selectedCategoryId}
-          onSelect={setSelectedCategoryId}
+          onSelect={handleCategorySelect}
         />
 
         {selectedCategory && (
-          <VariationGrid category={selectedCategory} onAdd={addToCart} />
+          <ProductSelector
+            products={products}
+            selectedId={effectiveProductId}
+            onSelect={setSelectedProductId}
+          />
+        )}
+
+        {selectedProduct && (
+          <VariationGrid product={selectedProduct} onAdd={addToCart} />
         )}
 
         <IkramCart
@@ -105,6 +144,8 @@ export default function IkramTab() {
           onClear={() => setCart([])}
           onComplete={handleCompleteIkram}
         />
+
+        <IkramHistory />
       </div>
 
       {successTotal !== null && (

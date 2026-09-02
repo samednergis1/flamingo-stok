@@ -109,6 +109,10 @@ export const FALLBACK_CATALOG = {
   ],
 };
 
+export function mainProductId(categoryId) {
+  return `${categoryId}-main`;
+}
+
 export async function fetchCatalog() {
   try {
     const res = await fetch('/catalog.json');
@@ -117,12 +121,12 @@ export async function fetchCatalog() {
       if (data?.categories?.length) return data;
     }
   } catch {
-    /* offline veya hata — yedek katalog */
+    /* offline */
   }
   return FALLBACK_CATALOG;
 }
 
-function parseMoney(value) {
+export function parseMoney(value) {
   if (value === '' || value == null) return null;
   const num = parseFloat(String(value).replace(',', '.'));
   return Number.isFinite(num) && num >= 0 ? num : null;
@@ -136,6 +140,99 @@ function applyVariationMeta(variation, stockMap, variationMeta = {}) {
     stock: stockMap[variation.id] ?? 0,
     price: meta.price ?? variation.price ?? null,
     cost: meta.cost ?? variation.cost ?? null,
+    active: meta.active !== false,
+    custom: variation.custom === true || String(variation.id).startsWith('custom-var-'),
+  };
+}
+
+function buildVariationsForProduct(
+  catalogVariations,
+  categoryId,
+  productId,
+  stockMap,
+  variationMeta,
+  customVariations
+) {
+  const base = (catalogVariations || []).map((v) =>
+    applyVariationMeta(v, stockMap, variationMeta)
+  );
+
+  const extras = (customVariations || [])
+    .filter((v) => v.categoryId === categoryId && v.productId === productId)
+    .map((v) => ({
+      id: v.id,
+      name: v.name,
+      stock: stockMap[v.id] ?? 0,
+      price: v.price ?? null,
+      cost: v.cost ?? null,
+      active: v.active !== false,
+      custom: true,
+    }));
+
+  return [...base, ...extras];
+}
+
+function buildProduct(
+  productDef,
+  categoryId,
+  stockMap,
+  variationMeta,
+  customVariations,
+  productMeta
+) {
+  const meta = productMeta?.[productDef.id] || {};
+  return {
+    id: productDef.id,
+    name: meta.name ?? productDef.name,
+    active: meta.active !== false && productDef.active !== false,
+    custom: productDef.custom === true,
+    varieties: buildVariationsForProduct(
+      productDef.varieties || productDef.variations || [],
+      categoryId,
+      productDef.id,
+      stockMap,
+      variationMeta,
+      customVariations
+    ),
+  };
+}
+
+function normalizeCustomCategory(cat, stockMap, customVariations) {
+  if (cat.products?.length) {
+    return {
+      id: cat.id,
+      name: cat.name,
+      custom: true,
+      active: cat.active !== false,
+      products: cat.products.map((p) =>
+        buildProduct(p, cat.id, stockMap, {}, customVariations, {})
+      ),
+    };
+  }
+
+  const productId = mainProductId(cat.id);
+  return {
+    id: cat.id,
+    name: cat.name,
+    custom: true,
+    active: cat.active !== false,
+    products: [
+      {
+        id: productId,
+        name: cat.name,
+        active: true,
+        custom: true,
+        varieties: (cat.variations || []).map((v) => ({
+          id: v.id,
+          name: v.name,
+          stock: stockMap[v.id] ?? v.stock ?? 0,
+          price: v.price ?? null,
+          cost: v.cost ?? null,
+          active: v.active !== false,
+          custom: true,
+        })),
+      },
+    ],
   };
 }
 
@@ -143,41 +240,63 @@ export function buildCategories(
   catalogCategories,
   stockMap = {},
   customCategories = [],
-  variationMeta = {}
+  variationMeta = {},
+  customProducts = [],
+  customVariations = [],
+  productMeta = {}
 ) {
-  const catalogMerged = catalogCategories.map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    custom: false,
-    variations: cat.variations.map((v) => applyVariationMeta(v, stockMap, variationMeta)),
-  }));
+  const catalogMerged = catalogCategories.map((cat) => {
+    const mainId = mainProductId(cat.id);
+    const extraProducts = (customProducts || [])
+      .filter((p) => p.categoryId === cat.id)
+      .map((p) =>
+        buildProduct(
+          { ...p, varieties: p.varieties || [] },
+          cat.id,
+          stockMap,
+          variationMeta,
+          customVariations,
+          productMeta
+        )
+      );
 
-  const customMerged = (customCategories || []).map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    custom: true,
-    variations: (cat.variations || []).map((v) => ({
-      id: v.id,
-      name: v.name,
-      stock: stockMap[v.id] ?? v.stock ?? 0,
-      price: v.price ?? null,
-      cost: v.cost ?? null,
-    })),
-  }));
+    const mainProduct = buildProduct(
+      {
+        id: mainId,
+        name: cat.name,
+        custom: false,
+        varieties: cat.variations,
+      },
+      cat.id,
+      stockMap,
+      variationMeta,
+      customVariations,
+      productMeta
+    );
+
+    return {
+      id: cat.id,
+      name: cat.name,
+      custom: false,
+      active: true,
+      products: [mainProduct, ...extraProducts],
+    };
+  });
+
+  const customMerged = (customCategories || []).map((cat) =>
+    normalizeCustomCategory(cat, stockMap, customVariations)
+  );
 
   return [...catalogMerged, ...customMerged];
-}
-
-/** @deprecated use buildCategories */
-export function mergeCatalogWithStock(catalogCategories, stockMap = {}) {
-  return buildCategories(catalogCategories, stockMap, [], {});
 }
 
 export function extractStock(categories) {
   const stock = {};
   for (const cat of categories) {
-    for (const v of cat.variations) {
-      stock[v.id] = v.stock;
+    for (const product of cat.products || []) {
+      for (const v of product.varieties || []) {
+        stock[v.id] = v.stock;
+      }
     }
   }
   return stock;
@@ -189,13 +308,61 @@ export function extractCustomCategories(categories) {
     .map((cat) => ({
       id: cat.id,
       name: cat.name,
-      variations: cat.variations.map((v) => ({
-        id: v.id,
-        name: v.name,
-        price: v.price ?? null,
-        cost: v.cost ?? null,
+      active: cat.active !== false,
+      products: (cat.products || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        active: p.active !== false,
+        varieties: (p.varieties || []).map((v) => ({
+          id: v.id,
+          name: v.name,
+          price: v.price ?? null,
+          cost: v.cost ?? null,
+          active: v.active !== false,
+        })),
       })),
     }));
+}
+
+export function extractCustomProducts(categories) {
+  const items = [];
+  for (const cat of categories) {
+    if (cat.custom) continue;
+    for (const product of cat.products || []) {
+      if (product.custom && product.id !== mainProductId(cat.id)) {
+        items.push({
+          categoryId: cat.id,
+          id: product.id,
+          name: product.name,
+          active: product.active !== false,
+          varieties: [],
+        });
+      }
+    }
+  }
+  return items;
+}
+
+export function extractCustomVariations(categories) {
+  const items = [];
+  for (const cat of categories) {
+    for (const product of cat.products || []) {
+      for (const v of product.varieties || []) {
+        if (v.custom) {
+          items.push({
+            categoryId: cat.id,
+            productId: product.id,
+            id: v.id,
+            name: v.name,
+            price: v.price ?? null,
+            cost: v.cost ?? null,
+            active: v.active !== false,
+          });
+        }
+      }
+    }
+  }
+  return items;
 }
 
 export function extractVariationMeta(catalogCategories, categories) {
@@ -209,24 +376,86 @@ export function extractVariationMeta(catalogCategories, categories) {
   const meta = {};
   for (const cat of categories) {
     if (cat.custom) continue;
-    for (const v of cat.variations) {
-      const originalName = catalogNames.get(v.id);
-      const entry = {};
-      if (originalName && v.name !== originalName) entry.name = v.name;
-      if (v.price != null) entry.price = v.price;
-      if (v.cost != null) entry.cost = v.cost;
-      if (Object.keys(entry).length) meta[v.id] = entry;
+    const mainId = mainProductId(cat.id);
+    for (const product of cat.products || []) {
+      if (product.id !== mainId && !product.custom) continue;
+      for (const v of product.varieties || []) {
+        if (v.custom) continue;
+        const originalName = catalogNames.get(v.id);
+        const entry = {};
+        if (originalName && v.name !== originalName) entry.name = v.name;
+        if (v.price != null) entry.price = v.price;
+        if (v.cost != null) entry.cost = v.cost;
+        if (v.active === false) entry.active = false;
+        if (Object.keys(entry).length) meta[v.id] = entry;
+      }
     }
   }
   return meta;
 }
 
-export function findVariation(categories, categoryId, variationId) {
-  const category = categories.find((c) => c.id === categoryId);
-  return category?.variations.find((v) => v.id === variationId) ?? null;
+export function extractProductMeta(categories) {
+  const meta = {};
+  for (const cat of categories) {
+    if (cat.custom) continue;
+    for (const product of cat.products || []) {
+      if (product.id === mainProductId(cat.id)) continue;
+      meta[product.id] = {
+        name: product.name,
+        active: product.active !== false,
+      };
+    }
+  }
+  return meta;
 }
 
-export { parseMoney };
+export function findVariation(categories, categoryId, productId, variationId) {
+  const category = categories.find((c) => c.id === categoryId);
+  const product = category?.products?.find((p) => p.id === productId);
+  return product?.varieties.find((v) => v.id === variationId) ?? null;
+}
+
+export function findProduct(categories, categoryId, productId) {
+  const category = categories.find((c) => c.id === categoryId);
+  return category?.products?.find((p) => p.id === productId) ?? null;
+}
+
+export function getActiveCategories(categories) {
+  return categories
+    .filter((c) => c.active !== false)
+    .map((c) => ({
+      ...c,
+      products: (c.products || [])
+        .filter((p) => p.active !== false)
+        .map((p) => ({
+          ...p,
+          varieties: (p.varieties || []).filter((v) => v.active !== false),
+        }))
+        .filter((p) => p.varieties.length > 0),
+    }))
+    .filter((c) => c.products.length > 0);
+}
+
+export function countCategoryStock(category) {
+  return (category.products || []).reduce(
+    (sum, p) => sum + (p.varieties || []).reduce((s, v) => s + v.stock, 0),
+    0
+  );
+}
+
+export function countCategoryVarieties(category) {
+  return (category.products || []).reduce((sum, p) => sum + (p.varieties || []).length, 0);
+}
+
+export function getVariationLabel(item) {
+  if (item.productName && item.productName !== item.categoryName) {
+    return `${item.productName} – ${item.variationName}`;
+  }
+  if (item.productName) {
+    return `${item.productName} – ${item.variationName}`;
+  }
+  return item.variationName;
+}
 
 export function migrateStockFromLegacy(legacyCategories, catalogCategories) {
   const stock = {};
@@ -241,11 +470,16 @@ export function migrateStockFromLegacy(legacyCategories, catalogCategories) {
   for (const cat of legacyCategories || []) {
     for (const v of cat.variations || []) {
       const mappedId = idByName.get(`${cat.name}::${v.name}`);
-      if (mappedId) {
-        stock[mappedId] = v.stock;
-      }
+      if (mappedId) stock[mappedId] = v.stock;
     }
   }
 
   return stock;
+}
+
+export function migrateCustomCategoriesLegacy(cats) {
+  return (cats || []).map((cat) => {
+    if (cat.products?.length) return cat;
+    return normalizeCustomCategory(cat, {}, []);
+  });
 }

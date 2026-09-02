@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useStore from '../../store/useStore';
 import CategoryCard from './CategoryCard';
 import { AddCategoryModal } from './InventoryModals';
+import { countCategoryStock } from '../../utils/catalog';
 
 export default function InventoryTab() {
   const categories = useStore((s) => s.categories);
@@ -9,8 +10,9 @@ export default function InventoryTab() {
   const [expandedId, setExpandedId] = useState(categories[0]?.id ?? null);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
 
-  const totalStock = categories.reduce(
-    (sum, c) => sum + c.variations.reduce((s, v) => s + v.stock, 0),
+  const totalStock = categories.reduce((sum, c) => sum + countCategoryStock(c), 0);
+  const totalVarieties = categories.reduce(
+    (sum, c) => sum + (c.products || []).reduce((s, p) => s + (p.varieties || []).length, 0),
     0
   );
 
@@ -20,7 +22,7 @@ export default function InventoryTab() {
         <div>
           <h2 className="text-xl font-bold">Ürünler & Stok</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {categories.length} kategori · {totalStock} toplam stok
+            {categories.length} kategori · {totalVarieties} çeşit · {totalStock} toplam stok
           </p>
         </div>
         <button
